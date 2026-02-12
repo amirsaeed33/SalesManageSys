@@ -1,0 +1,243 @@
+@model SaleManagementSys.Models.Sale
+@{
+    ViewData["Title"] = "Print Invoice";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice - @Model.Id</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #000;
+            background: #fff;
+            padding: 10px;
+        }
+
+        .invoice-container {
+            width: 300px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 15px;
+        }
+
+        .shop-name {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px dashed #000;
+            padding-bottom: 8px;
+        }
+
+        .invoice-header {
+            margin-bottom: 15px;
+        }
+
+        .invoice-header p {
+            margin: 3px 0;
+            font-size: 11px;
+        }
+
+        .invoice-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 80px;
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .products-table th {
+            background: #f0f0f0;
+            padding: 5px;
+            text-align: left;
+            font-size: 10px;
+            border-bottom: 1px solid #000;
+        }
+
+        .products-table td {
+            padding: 4px 5px;
+            font-size: 11px;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .products-table .text-right {
+            text-align: right;
+        }
+
+        .products-table .text-center {
+            text-align: center;
+        }
+
+        .grand-total {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid #000;
+            text-align: right;
+        }
+
+        .grand-total-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .grand-total-amount {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .print-actions {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .btn-print {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .btn-print:hover {
+            background: #0056b3;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-left: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: #545b62;
+        }
+
+        .separator {
+            border-top: 1px dashed #000;
+            margin: 10px 0;
+        }
+
+        /* Print Styles */
+        @@media print {
+            body {
+                padding: 0;
+            }
+
+            .invoice-container {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .print-actions {
+                display: none !important;
+            }
+
+            .btn-print,
+            .btn-back {
+                display: none !important;
+            }
+        }
+
+        @@page {
+            size: 80mm auto;
+            margin: 5mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Shop Name -->
+        <div class="shop-name">
+            SALES MANAGEMENT SYSTEM
+        </div>
+
+        <!-- Invoice Header -->
+        <div class="invoice-header">
+            <p><span class="invoice-label">Invoice #:</span> @Model.Id</p>
+            <p><span class="invoice-label">Customer:</span> @Model.CustomerName</p>
+            @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+            {
+                <p><span class="invoice-label">Phone:</span> @Model.PhoneNumber</p>
+            }
+            <p><span class="invoice-label">Date:</span> @Model.SaleDate.ToString("dd/MM/yyyy")</p>
+            <p><span class="invoice-label">Time:</span> @Model.SaleDate.ToString("HH:mm")</p>
+        </div>
+
+        <div class="separator"></div>
+
+        <!-- Products Table -->
+        <table class="products-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-right">Price</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.SaleDetails)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td class="text-center">@item.Quantity</td>
+                        <td class="text-right">@item.SalePrice.ToString("N2")</td>
+                        <td class="text-right">@((item.Quantity * item.SalePrice).ToString("N2"))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="separator"></div>
+
+        <!-- Grand Total -->
+        <div class="grand-total">
+            <div class="grand-total-label">GRAND TOTAL</div>
+            <div class="grand-total-amount">@Model.TotalAmount.ToString("N2")</div>
+        </div>
+
+        <!-- Print Actions (Hidden during print) -->
+        <div class="print-actions">
+            <button class="btn-print" onclick="window.print()">Print Invoice</button>
+            <a href="@Url.Action("Index", "Dashboard")" class="btn-back">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Auto-print on page load (optional - comment out if not needed)
+        // window.onload = function() {
+        //     window.print();
+        // };
+    </script>
+</body>
+</html>
