@@ -362,3 +362,9 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /CXP.WebApi/appsettings.Development.json
+/SaleManagementSys/SaleManagementSys/bin/Debug/net8.0/SaleManagementSys.dll
+/SaleManagementSys/SaleManagementSys/bin/Debug/net8.0/SaleManagementSys.exe
+/SaleManagementSys/SaleManagementSys/bin/Debug/net8.0/SaleManagementSys.pdb
+/SaleManagementSys/SaleManagementSys/obj/Debug/net8.0/SaleManagementSys.pdb
+/SaleManagementSys/SaleManagementSys/obj/Debug/net8.0/SaleManagementSys.dll
+/SaleManagementSys/SaleManagementSys/obj/Debug/net8.0/refint/SaleManagementSys.dll
