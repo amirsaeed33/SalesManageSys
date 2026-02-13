@@ -1,8 +1,14 @@
-# Build results
+# Build results (do not push)
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+Debug/
+Release/
+**/Debug/
+**/Release/
+**/debug/
+**/release/
 x64/
 x86/
 [Ww][Ii][Nn]32/
@@ -13,6 +19,14 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+**/bin/
+**/obj/
+out/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.userprefs
 
 # Visual Studio
 .vs/
@@ -96,8 +110,17 @@ nCrunchTemp_*
 *.[Rr]e[Ss]harper
 *.DotSettings.user
 
-# Backup
+# Backup & temp
 *~
 *.bak
 *.swp
-*~
+*.tmp
+*.temp
+*.log
+[Tt]emp/
+[Tt]mp/
+
+# Local / IDE caches (do not push)
+.cache/
+.parcel-cache/
+node_modules/
