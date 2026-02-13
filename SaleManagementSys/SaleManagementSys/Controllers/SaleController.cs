@@ -29,90 +29,65 @@ namespace SaleManagementSys.Controllers
         {
             var sale = await _saleService.GetSaleByIdAsync(id);
             if (sale == null)
-            {
                 return NotFound();
-            }
             return View(sale);
         }
 
         // GET: Sale/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var sale = new Sale
+            var products = await _saleService.GetAllProductsAsync();
+            ViewBag.Products = products;
+
+            var model = new CreateSaleViewModel
             {
                 SaleDate = DateTime.Today
             };
-            return View(sale);
+            return View(model);
         }
 
         // POST: Sale/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Sale sale)
+        public async Task<IActionResult> Create(CreateSaleViewModel model)
         {
-            // Ensure SaleDetails is initialized
-            if (sale.SaleDetails == null)
-            {
-                sale.SaleDetails = new List<SaleDetail>();
-            }
+            if (model.SaleDetails == null)
+                model.SaleDetails = new List<CreateSaleDetailViewModel>();
 
-            // Filter out empty or invalid sale details and create a new list
-            var validSaleDetails = sale.SaleDetails
-                .Where(sd => sd != null && 
-                             !string.IsNullOrWhiteSpace(sd.ProductName) && 
-                             sd.Quantity > 0 && 
-                             sd.SalePrice > 0)
+            var validDetails = model.SaleDetails
+                .Where(d => d.ProductId > 0 && d.Quantity > 0 && d.SalePrice > 0)
                 .ToList();
 
-            // Validate that at least one sale detail exists
-            if (!validSaleDetails.Any())
-            {
-                ModelState.AddModelError("SaleDetails", "At least one product is required.");
-            }
-
-            // Validate each sale detail
-            for (int i = 0; i < validSaleDetails.Count; i++)
-            {
-                var detail = validSaleDetails[i];
-                if (string.IsNullOrWhiteSpace(detail.ProductName))
-                {
-                    ModelState.AddModelError($"SaleDetails[{i}].ProductName", "Product name is required.");
-                }
-                if (detail.Quantity <= 0)
-                {
-                    ModelState.AddModelError($"SaleDetails[{i}].Quantity", "Quantity must be greater than 0.");
-                }
-                if (detail.SalePrice <= 0)
-                {
-                    ModelState.AddModelError($"SaleDetails[{i}].SalePrice", "Sale price must be greater than 0.");
-                }
-            }
+            if (validDetails.Count == 0)
+                ModelState.AddModelError("SaleDetails", "At least one product line is required (Product, Quantity > 0, Sale Price > 0).");
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Calculate TotalAmount as sum of all SubTotals (Quantity * SalePrice)
-                    sale.TotalAmount = validSaleDetails.Sum(sd => sd.SalePrice * sd.Quantity);
-                    
-                    // Calculate TotalProfit
-                    sale.TotalProfit = validSaleDetails.Sum(sd => (sd.SalePrice - sd.PurchasePrice) * sd.Quantity);
+                    var sale = new Sale
+                    {
+                        CustomerName = model.CustomerName,
+                        PhoneNumber = model.PhoneNumber,
+                        SaleDate = model.SaleDate,
+                        TotalAmount = validDetails.Sum(d => d.SalePrice * d.Quantity),
+                        TotalProfit = validDetails.Sum(d => (d.SalePrice - d.PurchasePrice) * d.Quantity)
+                    };
 
-                    // Clear SaleDetails from sale object before saving Sale first
-                    sale.SaleDetails = new List<SaleDetail>();
-
-                    // Save Sale first
                     _context.Sales.Add(sale);
                     await _context.SaveChangesAsync();
 
-                    // Now loop through SaleItems and assign SaleId
-                    foreach (var saleDetail in validSaleDetails)
+                    foreach (var d in validDetails)
                     {
-                        saleDetail.SaleId = sale.Id;
-                        _context.SaleDetails.Add(saleDetail);
+                        _context.SaleDetails.Add(new SaleDetail
+                        {
+                            SaleId = sale.Id,
+                            ProductId = d.ProductId,
+                            Quantity = d.Quantity,
+                            SalePrice = d.SalePrice,
+                            PurchasePrice = d.PurchasePrice
+                        });
                     }
-
-                    // Save all SaleDetails
                     await _context.SaveChangesAsync();
 
                     return RedirectToAction("Index", "Dashboard");
@@ -123,11 +98,8 @@ namespace SaleManagementSys.Controllers
                 }
             }
 
-            // Restore SaleDetails for display in case of validation errors
-            sale.SaleDetails = validSaleDetails;
-
-            // If we get here, there were validation errors
-            return View(sale);
+            ViewBag.Products = await _saleService.GetAllProductsAsync();
+            return View(model);
         }
     }
 }

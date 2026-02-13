@@ -4,6 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>1144eebb-28aa-46ec-be8d-c76305cb2c08</UserSecretsId>
+    <!-- Set false if you get "Conflicting assets" (project seen from 2 paths). Remove once using a single repo path. -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
   </PropertyGroup>
 
   <ItemGroup>

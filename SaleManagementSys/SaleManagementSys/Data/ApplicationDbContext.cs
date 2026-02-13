@@ -12,6 +12,7 @@ namespace SaleManagementSys.Data
 
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleDetail> SaleDetails { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,8 +27,6 @@ namespace SaleManagementSys.Data
                     .HasMaxLength(200);
                 entity.Property(e => e.PhoneNumber)
                     .HasMaxLength(20);
-                entity.Property(e => e.Email)
-                    .HasMaxLength(200);
                 entity.Property(e => e.SaleDate)
                     .IsRequired();
                 entity.Property(e => e.TotalAmount)
@@ -38,22 +37,23 @@ namespace SaleManagementSys.Data
                     .HasColumnType("decimal(18,2)");
             });
 
+            // Configure Product entity
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.DefaultPurchasePrice).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Description).HasMaxLength(1000);
+            });
+
             // Configure SaleDetail entity
             modelBuilder.Entity<SaleDetail>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.ProductName)
-                    .IsRequired()
-                    .HasMaxLength(200);
-                entity.Property(e => e.PurchasePrice)
-                    .HasColumnType("decimal(18,2)");
-                entity.Property(e => e.SalePrice)
-                    .IsRequired()
-                    .HasColumnType("decimal(18,2)");
-                entity.Property(e => e.Quantity)
-                    .IsRequired();
-                entity.Property(e => e.Description)
-                    .HasMaxLength(1000);
+                entity.Property(e => e.PurchasePrice).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.SalePrice).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Quantity).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(1000);
             });
 
             // Configure one-to-many relationship between Sale and SaleDetail
@@ -62,6 +62,13 @@ namespace SaleManagementSys.Data
                 .WithMany(s => s.SaleDetails)
                 .HasForeignKey(sd => sd.SaleId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure many-to-one relationship between SaleDetail and Product
+            modelBuilder.Entity<SaleDetail>()
+                .HasOne(sd => sd.Product)
+                .WithMany()
+                .HasForeignKey(sd => sd.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

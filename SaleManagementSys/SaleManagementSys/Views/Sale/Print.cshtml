@@ -209,7 +209,7 @@
                 @foreach (var item in Model.SaleDetails)
                 {
                     <tr>
-                        <td>@item.ProductName</td>
+                        <td>@(item.Product?.Name ?? "—")</td>
                         <td class="text-center">@item.Quantity</td>
                         <td class="text-right">@item.SalePrice.ToString("N2")</td>
                         <td class="text-right">@((item.Quantity * item.SalePrice).ToString("N2"))</td>

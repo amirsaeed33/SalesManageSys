@@ -18,10 +18,6 @@ namespace SaleManagementSys.Models
         [Phone(ErrorMessage = "Invalid phone number format")]
         public string? PhoneNumber { get; set; }
 
-        [StringLength(200)]
-        [EmailAddress(ErrorMessage = "Invalid email address format")]
-        public string? Email { get; set; }
-
         [Required]
         [DataType(DataType.Date)]
         [Display(Name = "Sale Date")]

@@ -18,23 +18,19 @@ namespace SaleManagementSys.Services
             return await _context.Sales
                 .AsNoTracking()
                 .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
                 .OrderByDescending(s => s.SaleDate)
                 .ThenByDescending(s => s.Id)
                 .ToListAsync();
         }
 
-        public async Task<Sale> GetSaleByIdAsync(int id)
+        public async Task<Sale?> GetSaleByIdAsync(int id)
         {
-            var sale = await _context.Sales
+            return await _context.Sales
                 .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (sale == null)
-            {
-                throw new KeyNotFoundException($"Sale with ID {id} not found.");
-            }
-
-            return sale;
         }
 
         public async Task AddSaleAsync(Sale sale)
@@ -88,9 +84,17 @@ namespace SaleManagementSys.Services
 
         public async Task<int> GetTotalProductsSoldAsync()
         {
-            return await _context.SaleDetails
+            return await _context.Products
                 .AsNoTracking()
-                .SumAsync(sd => sd.Quantity);
+                .CountAsync();
+        }
+
+        public async Task<List<Product>> GetAllProductsAsync()
+        {
+            return await _context.Products
+                .AsNoTracking()
+                .OrderBy(p => p.Name)
+                .ToListAsync();
         }
     }
 }

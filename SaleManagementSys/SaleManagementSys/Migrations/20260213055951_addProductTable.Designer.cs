@@ -12,8 +12,8 @@ using SaleManagementSys.Data;
 namespace SaleManagementSys.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260212114625_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260213055951_addProductTable")]
+    partial class addProductTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,31 @@ namespace SaleManagementSys.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SaleManagementSys.Models.Product", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("DefaultPurchasePrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
+                });
+
             modelBuilder.Entity("SaleManagementSys.Models.Sale", b =>
                 {
                     b.Property<int>("Id")
@@ -35,10 +60,6 @@ namespace SaleManagementSys.Migrations
 
                     b.Property<string>("CustomerName")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Email")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -72,10 +93,8 @@ namespace SaleManagementSys.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("PurchasePrice")
                         .HasColumnType("decimal(18,2)");
@@ -91,6 +110,8 @@ namespace SaleManagementSys.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProductId");
+
                     b.HasIndex("SaleId");
 
                     b.ToTable("SaleDetails");
@@ -98,11 +119,19 @@ namespace SaleManagementSys.Migrations
 
             modelBuilder.Entity("SaleManagementSys.Models.SaleDetail", b =>
                 {
+                    b.HasOne("SaleManagementSys.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SaleManagementSys.Models.Sale", "Sale")
                         .WithMany("SaleDetails")
                         .HasForeignKey("SaleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Product");
 
                     b.Navigation("Sale");
                 });
