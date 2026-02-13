@@ -12,7 +12,7 @@ using SaleManagementSys.Data;
 namespace SaleManagementSys.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260213064750_test")]
+    [Migration("20260213064916_test")]
     partial class test
     {
         /// <inheritdoc />
