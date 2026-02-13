@@ -54,20 +54,6 @@
         letter-spacing: 1px;
     }
 
-    .create-sale-btn {
-        border-radius: 0.75rem;
-        padding: 0.75rem 2rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .create-sale-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .sales-table-container {
         background: white;
         border-radius: 0.75rem;
@@ -157,6 +143,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" asp-controller="Sale" asp-action="Create">
+                        <i class="fas fa-plus-circle me-1"></i>Create Sale
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="#">
                         <i class="fas fa-user-circle user-icon"></i>
                     </a>
@@ -187,13 +178,6 @@
                 </div>
             </div>
         }
-    </div>
-
-    <!-- Create New Sale Button -->
-    <div class="d-flex justify-content-end mb-4">
-        <a asp-controller="Sale" asp-action="Create" class="btn btn-primary create-sale-btn">
-            <i class="fas fa-plus-circle me-2"></i>Create New Sale
-        </a>
     </div>
 
     <!-- Sales Table Section -->
