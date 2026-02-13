@@ -9,11 +9,13 @@ namespace SaleManagementSys.Controllers
     public class SaleController : Controller
     {
         private readonly ISaleService _saleService;
+        private readonly IProductService _productService;
         private readonly ApplicationDbContext _context;
 
-        public SaleController(ISaleService saleService, ApplicationDbContext context)
+        public SaleController(ISaleService saleService, IProductService productService, ApplicationDbContext context)
         {
             _saleService = saleService;
+            _productService = productService;
             _context = context;
         }
 
@@ -36,7 +38,7 @@ namespace SaleManagementSys.Controllers
         // GET: Sale/Create
         public async Task<IActionResult> Create()
         {
-            var products = await _saleService.GetAllProductsAsync();
+            var products = await _productService.GetAllProductsAsync();
             ViewBag.Products = products;
 
             var model = new CreateSaleViewModel
@@ -98,7 +100,7 @@ namespace SaleManagementSys.Controllers
                 }
             }
 
-            ViewBag.Products = await _saleService.GetAllProductsAsync();
+            ViewBag.Products = await _productService.GetAllProductsAsync();
             return View(model);
         }
     }

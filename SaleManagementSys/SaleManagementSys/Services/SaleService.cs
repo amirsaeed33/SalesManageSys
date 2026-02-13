@@ -84,17 +84,9 @@ namespace SaleManagementSys.Services
 
         public async Task<int> GetTotalProductsSoldAsync()
         {
-            return await _context.Products
+            return await _context.SaleDetails
                 .AsNoTracking()
-                .CountAsync();
-        }
-
-        public async Task<List<Product>> GetAllProductsAsync()
-        {
-            return await _context.Products
-                .AsNoTracking()
-                .OrderBy(p => p.Name)
-                .ToListAsync();
+                .SumAsync(sd => sd.Quantity);
         }
     }
 }

@@ -6,18 +6,16 @@ namespace SaleManagementSys.Controllers
 {
     public class ProductController : Controller
     {
-        private readonly ISaleService _saleService;
-        private readonly Data.ApplicationDbContext _context;
+        private readonly IProductService _productService;
 
-        public ProductController(ISaleService saleService, Data.ApplicationDbContext context)
+        public ProductController(IProductService productService)
         {
-            _saleService = saleService;
-            _context = context;
+            _productService = productService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var products = await _saleService.GetAllProductsAsync();
+            var products = await _productService.GetAllProductsAsync();
             return View(products);
         }
 
@@ -32,8 +30,7 @@ namespace SaleManagementSys.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Products.Add(product);
-                await _context.SaveChangesAsync();
+                await _productService.AddProductAsync(product);
                 return RedirectToAction(nameof(Index));
             }
             return View(product);

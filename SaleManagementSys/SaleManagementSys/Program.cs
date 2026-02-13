@@ -11,8 +11,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register SaleService
+// Register services
 builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 

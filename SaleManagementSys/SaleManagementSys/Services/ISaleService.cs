@@ -10,6 +10,5 @@ namespace SaleManagementSys.Services
         Task<decimal> GetTodaySalesAsync();
         Task<decimal> GetTodayProfitAsync();
         Task<int> GetTotalProductsSoldAsync();
-        Task<List<Product>> GetAllProductsAsync();
     }
 }

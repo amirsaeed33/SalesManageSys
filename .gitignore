@@ -124,3 +124,7 @@ nCrunchTemp_*
 .cache/
 .parcel-cache/
 node_modules/
+/SaleManagementSys/SaleManagementSys/obj/Debug/net8.0/SaleManagementSys.AssemblyInfo.cs
+/SaleManagementSys/SaleManagementSys/obj/Debug/net8.0/SaleManagementSys.AssemblyInfoInputs.cache
+/SaleManagementSys/SaleManagementSys/obj/Debug/net8.0/SaleManagementSys.csproj.CoreCompileInputs.cache
+/SaleManagementSys/SaleManagementSys/obj/Debug/net8.0/SaleManagementSys.sourcelink.json
