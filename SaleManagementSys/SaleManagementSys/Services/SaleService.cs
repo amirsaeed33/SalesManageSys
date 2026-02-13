@@ -88,5 +88,15 @@ namespace SaleManagementSys.Services
                 .AsNoTracking()
                 .SumAsync(sd => sd.Quantity);
         }
+
+        public async Task<bool> DeleteSaleAsync(int id)
+        {
+            var sale = await _context.Sales.FindAsync(id);
+            if (sale == null)
+                return false;
+            _context.Sales.Remove(sale);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

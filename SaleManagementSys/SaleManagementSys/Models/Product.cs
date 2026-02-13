@@ -20,5 +20,8 @@ namespace SaleManagementSys.Models
 
         [StringLength(1000)]
         public string? Description { get; set; }
+
+        [Display(Name = "Active")]
+        public bool IsActive { get; set; } = true;
     }
 }

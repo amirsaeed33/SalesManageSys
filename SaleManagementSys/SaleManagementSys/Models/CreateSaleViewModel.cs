@@ -10,12 +10,12 @@ namespace SaleManagementSys.Models
         [Required(ErrorMessage = "Customer name is required")]
         [StringLength(200)]
         [Display(Name = "Customer Name")]
-        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = "walking customer";
 
         [StringLength(20)]
         [Display(Name = "Phone Number")]
         [Phone(ErrorMessage = "Invalid phone number format")]
-        public string? PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; } = "03321418639";
 
         [Required]
         [DataType(DataType.Date)]

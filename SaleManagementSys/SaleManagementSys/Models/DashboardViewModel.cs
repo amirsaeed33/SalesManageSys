@@ -2,9 +2,7 @@ namespace SaleManagementSys.Models
 {
     public class DashboardViewModel
     {
-        public decimal TodaySales { get; set; }
-        public decimal TodayProfit { get; set; }
-        public int TotalProducts { get; set; }
+        public List<DashboardCardViewModel> Cards { get; set; } = new();
         public List<Sale> Sales { get; set; } = new List<Sale>();
     }
 }

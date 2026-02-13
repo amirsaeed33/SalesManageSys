@@ -19,21 +19,35 @@ namespace SaleManagementSys.Controllers
             return View(products);
         }
 
-        public IActionResult Create()
+        [HttpGet]
+        public IActionResult Create() => RedirectToAction(nameof(Index));
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Save(Product product)
         {
-            return View(new Product());
+            if (!ModelState.IsValid)
+            {
+                TempData["Message"] = "Please fix the errors below.";
+                TempData["ProductId"] = product.Id;
+                TempData["ProductName"] = product.Name;
+                TempData["ProductPrice"] = product.DefaultPurchasePrice;
+                TempData["ProductDescription"] = product.Description ?? "";
+                TempData["ProductIsActive"] = product.IsActive;
+                return RedirectToAction(nameof(Index));
+            }
+
+            await _productService.SaveProductAsync(product);
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Product product)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (ModelState.IsValid)
-            {
-                await _productService.AddProductAsync(product);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(product);
+            if (!await _productService.DeleteProductAsync(id))
+                TempData["Message"] = "Cannot delete: product is used in one or more sales.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

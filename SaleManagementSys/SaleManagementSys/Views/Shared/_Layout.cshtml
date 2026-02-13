@@ -54,6 +54,29 @@
         </main>
     </div>
 
+    <!-- Delete confirmation modal (replaces browser confirm) -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteConfirmMessage" class="mb-0">Are you sure you want to delete this?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Cancel</button>
+                    <button type="button" class="btn btn-danger" id="deleteConfirmYesBtn">
+                        <i class="fas fa-trash me-1"></i>Yes, Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2026 - Sale management - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
@@ -62,6 +85,29 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Delete confirmation dialog (used by Sale and Product delete buttons)
+        var deleteConfirmFormId = null;
+        function showDeleteConfirm(formId, message) {
+            deleteConfirmFormId = formId;
+            document.getElementById('deleteConfirmMessage').textContent = message || 'Are you sure you want to delete this?';
+            var modalEl = document.getElementById('deleteConfirmModal');
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('deleteConfirmYesBtn').addEventListener('click', function () {
+                if (deleteConfirmFormId) {
+                    var form = document.getElementById(deleteConfirmFormId);
+                    if (form) form.submit();
+                    deleteConfirmFormId = null;
+                }
+                var modalEl = document.getElementById('deleteConfirmModal');
+                var modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

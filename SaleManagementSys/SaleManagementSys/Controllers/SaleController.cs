@@ -38,7 +38,7 @@ namespace SaleManagementSys.Controllers
         // GET: Sale/Create
         public async Task<IActionResult> Create()
         {
-            var products = await _productService.GetAllProductsAsync();
+            var products = await _productService.GetActiveProductsAsync();
             ViewBag.Products = products;
 
             var model = new CreateSaleViewModel
@@ -100,8 +100,16 @@ namespace SaleManagementSys.Controllers
                 }
             }
 
-            ViewBag.Products = await _productService.GetAllProductsAsync();
+            ViewBag.Products = await _productService.GetActiveProductsAsync();
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _saleService.DeleteSaleAsync(id);
+            return RedirectToAction("Index", "Dashboard");
         }
     }
 }

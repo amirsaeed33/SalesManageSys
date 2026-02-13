@@ -21,6 +21,15 @@ namespace SaleManagementSys.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Product>> GetActiveProductsAsync()
+        {
+            return await _context.Products
+                .AsNoTracking()
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.Name)
+                .ToListAsync();
+        }
+
         public async Task<Product?> GetProductByIdAsync(int id)
         {
             return await _context.Products
@@ -28,15 +37,16 @@ namespace SaleManagementSys.Services
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task AddProductAsync(Product product)
+        public async Task SaveProductAsync(Product product)
         {
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateProductAsync(Product product)
-        {
-            _context.Products.Update(product);
+            if (product.Id == 0)
+            {
+                _context.Products.Add(product);
+            }
+            else
+            {
+                _context.Products.Update(product);
+            }
             await _context.SaveChangesAsync();
         }
 

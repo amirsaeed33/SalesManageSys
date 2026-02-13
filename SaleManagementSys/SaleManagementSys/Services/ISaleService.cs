@@ -10,5 +10,6 @@ namespace SaleManagementSys.Services
         Task<decimal> GetTodaySalesAsync();
         Task<decimal> GetTodayProfitAsync();
         Task<int> GetTotalProductsSoldAsync();
+        Task<bool> DeleteSaleAsync(int id);
     }
 }
