@@ -11,9 +11,9 @@
         <h2>
             <i class="fas fa-list me-2"></i>Sales List
         </h2>
-        <a asp-controller="Sale" asp-action="Create" class="btn btn-primary">
-            <i class="fas fa-plus-circle me-2"></i>Create New Sale
-        </a>
+        <button type="button" class="btn btn-primary" id="btnOpenCreateSaleModal">
+            <i class="fas fa-plus-circle me-2"></i>Create Sale
+        </button>
     </div>
 
     <div class="sales-table-container">
@@ -30,7 +30,7 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="salesTableBody">
                     @if (Model != null && Model.Any())
                     {
                         var index = 1;
@@ -71,9 +71,9 @@
                             <td colspan="7" class="text-center py-4">
                                 <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
                                 <p class="text-muted">No sales records found.</p>
-                                <a asp-controller="Sale" asp-action="Create" class="btn btn-primary">
+                                <button type="button" class="btn btn-primary" data-open-create-modal>
                                     <i class="fas fa-plus-circle me-2"></i>Create Your First Sale
-                                </a>
+                                </button>
                             </td>
                         </tr>
                     }
@@ -82,3 +82,203 @@
         </div>
     </div>
 </div>
+
+<!-- Create Sale Modal -->
+<div class="modal fade" id="createSaleModal" tabindex="-1" aria-labelledby="createSaleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createSaleModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Sale
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="createSaleModalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        (function() {
+            const modal = document.getElementById('createSaleModal');
+            const modalBody = document.getElementById('createSaleModalBody');
+            const createSaleUrl = '@Url.Action("Create", "Sale")';
+            const getCreatePartialUrl = '@Url.Action("GetCreatePartial", "Sale")';
+            const getTablePartialUrl = '@Url.Action("GetSalesTablePartial", "Sale")';
+
+            function openCreateModal() {
+                const bsModal = new bootstrap.Modal(modal);
+                modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+                bsModal.show();
+                fetch(getCreatePartialUrl)
+                    .then(r => r.text())
+                    .then(html => {
+                        modalBody.innerHTML = html;
+                        initCreateSaleForm();
+                        const form = document.getElementById('createSaleForm');
+                        if (form) form.addEventListener('submit', handleCreateSubmit);
+                        if (typeof $.validator !== 'undefined' && typeof $.validator.unobtrusive !== 'undefined') {
+                            $.validator.unobtrusive.parse(form);
+                        }
+                    })
+                    .catch(() => {
+                        modalBody.innerHTML = '<div class="alert alert-danger">Failed to load form. Please try again.</div>';
+                    });
+            }
+
+            function initCreateSaleForm() {
+                const dataEl = document.getElementById('createSaleProductsData');
+                const products = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
+                let saleItemIndex = 0;
+
+                function productOptions() {
+                    let html = '<option value="">-- Select Product --</option>';
+                    products.forEach(p => {
+                        html += '<option value="' + p.Id + '" data-price="' + p.DefaultPurchasePrice + '">' + (p.Name || '') + '</option>';
+                    });
+                    return html;
+                }
+
+                function addSaleItemRow() {
+                    const tbody = document.getElementById('saleItemsContainer');
+                    if (!tbody) return;
+                    const index = saleItemIndex++;
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-index', index);
+                    row.innerHTML = '<td><select name="SaleDetails[' + index + '].ProductId" class="form-select form-select-sm product-select" required>' + productOptions() + '</select></td>' +
+                        '<td><input name="SaleDetails[' + index + '].Quantity" type="number" min="1" class="form-control form-control-sm quantity text-end" value="1" required /></td>' +
+                        '<td><input name="SaleDetails[' + index + '].SalePrice" type="number" step="0.01" min="0" class="form-control form-control-sm sale-price text-end" placeholder="0.00" required /></td>' +
+                        '<td><input name="SaleDetails[' + index + '].PurchasePrice" type="number" step="0.01" min="0" class="form-control form-control-sm purchase-price text-end" placeholder="0.00" /></td>' +
+                        '<td class="text-end subtotal-cell" data-subtotal="0.00">0.00</td>' +
+                        '<td class="text-center"><button type="button" class="btn btn-danger btn-sm btn-remove"><i class="fas fa-trash"></i></button></td>';
+                    tbody.appendChild(row);
+                    row.querySelector('.btn-remove').addEventListener('click', function() { removeSaleItem(this); });
+                    row.querySelector('.product-select').addEventListener('change', function() {
+                        const opt = this.selectedOptions[0];
+                        if (opt && opt.value) {
+                            const price = parseFloat(opt.getAttribute('data-price')) || 0;
+                            row.querySelector('.purchase-price').value = price.toFixed(2);
+                            calculateTotals();
+                        }
+                    });
+                    [row.querySelector('.quantity'), row.querySelector('.sale-price'), row.querySelector('.purchase-price')].forEach(function(input) {
+                        if (input) input.addEventListener('input', function() { calculateRowSubTotal(row); calculateTotals(); });
+                    });
+                    updateIndexes();
+                }
+
+                function removeSaleItem(btn) {
+                    btn.closest('tr').remove();
+                    updateIndexes();
+                    calculateTotals();
+                }
+
+                function updateIndexes() {
+                    document.querySelectorAll('#saleItemsContainer tr').forEach(function(row, idx) {
+                        row.querySelectorAll('input, select').forEach(function(input) {
+                            if (input && input.name) input.name = input.name.replace(/SaleDetails\[\d+\]/, 'SaleDetails[' + idx + ']');
+                        });
+                        row.setAttribute('data-index', idx);
+                    });
+                }
+
+                function calculateRowSubTotal(row) {
+                    var qty = parseFloat(row.querySelector('.quantity').value) || 0;
+                    var price = parseFloat(row.querySelector('.sale-price').value) || 0;
+                    var cell = row.querySelector('[data-subtotal]');
+                    if (cell) { cell.textContent = (qty * price).toFixed(2); cell.setAttribute('data-subtotal', (qty * price).toFixed(2)); }
+                }
+
+                function calculateTotals() {
+                    var total = 0;
+                    document.querySelectorAll('#saleItemsContainer tr').forEach(function(row) {
+                        total += (parseFloat(row.querySelector('.quantity').value) || 0) * (parseFloat(row.querySelector('.sale-price').value) || 0);
+                    });
+                    var el = document.getElementById('grandTotal');
+                    if (el) el.textContent = total.toFixed(2);
+                }
+
+                var container = document.getElementById('saleItemsContainer');
+                if (!container) return;
+                container.innerHTML = '';
+                saleItemIndex = 0;
+                var gt = document.getElementById('grandTotal');
+                if (gt) gt.textContent = '0.00';
+
+                document.getElementById('addSaleItem')?.addEventListener('click', addSaleItemRow);
+                if (container.querySelectorAll('tr').length === 0) addSaleItemRow();
+            }
+
+            function handleCreateSubmit(e) {
+                e.preventDefault();
+                const form = document.getElementById('createSaleForm');
+                const submitBtn = document.getElementById('createSaleSubmitBtn');
+                const validationSummary = document.getElementById('createSaleValidationSummary');
+
+                if (validationSummary) validationSummary.style.display = 'none';
+
+                const formData = new FormData(form);
+                const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                if (token) formData.append('__RequestVerificationToken', token);
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Saving...';
+
+                fetch(createSaleUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function(r) {
+                    return r.json().catch(function() { return { success: false, errors: [{ message: 'Invalid response from server.' }] }; })
+                        .then(function(data) {
+                            if (r.ok && data.success) {
+                                bootstrap.Modal.getInstance(modal).hide();
+                                refreshSalesTable();
+                            } else {
+                                showValidationErrors(data.errors || [{ message: 'An error occurred. Please try again.' }]);
+                            }
+                        });
+                })
+                .catch(function() {
+                    showValidationErrors([{ message: 'An error occurred. Please try again.' }]);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save me-1"></i>Create Sale';
+                });
+            }
+
+            function showValidationErrors(errors) {
+                const validationSummary = document.getElementById('createSaleValidationSummary');
+                if (!validationSummary) return;
+                validationSummary.innerHTML = errors.map(e => (e.key ? '<strong>' + e.key + ':</strong> ' : '') + e.message).join('<br />');
+                validationSummary.style.display = errors.length ? 'block' : 'none';
+            }
+
+            function refreshSalesTable() {
+                fetch(getTablePartialUrl)
+                    .then(r => r.text())
+                    .then(html => {
+                        const tbody = document.getElementById('salesTableBody');
+                        if (tbody) tbody.innerHTML = html;
+                    });
+            }
+
+            modal.addEventListener('hidden.bs.modal', function() {
+                modalBody.innerHTML = '';
+            });
+
+            document.getElementById('btnOpenCreateSaleModal').addEventListener('click', openCreateModal);
+            document.querySelectorAll('[data-open-create-modal]').forEach(btn => btn.addEventListener('click', openCreateModal));
+        })();
+    </script>
+}

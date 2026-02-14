@@ -31,12 +31,31 @@ namespace SaleManagementSys.Controllers
             return View(sale);
         }
 
-        // GET: Sale/Create
-        public async Task<IActionResult> Create()
+        // GET: Sale/Create (redirects to Index - form is loaded via modal)
+        public IActionResult Create()
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Returns the Create Sale form as a partial view for loading in a modal.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetCreatePartial()
         {
             var products = await _productService.GetActiveProductsAsync();
             ViewBag.Products = products;
-            return View(new CreateSaleViewModel());
+            return PartialView("_CreateSalePartial", new CreateSaleViewModel());
+        }
+
+        /// <summary>
+        /// Returns the Sales table body as a partial view for refreshing after AJAX create.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetSalesTablePartial()
+        {
+            var sales = await _saleService.GetTodaySalesForDisplayAsync();
+            return PartialView("_SalesTablePartial", sales);
         }
 
         // POST: Sale/Create
@@ -73,12 +92,27 @@ namespace SaleManagementSys.Controllers
                     };
 
                     await _saleService.AddSaleAsync(sale);
-                    return RedirectToAction("Index", "Dashboard");
+
+                    var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+                    if (isAjax)
+                        return Json(new { success = true });
+
+                    return RedirectToAction("Index", "Sale");
                 }
                 catch (Exception ex)
                 {
                     ModelState.AddModelError("", $"An error occurred while saving the sale: {ex.Message}");
                 }
+            }
+
+            var isAjaxRequest = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+            if (isAjaxRequest)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .SelectMany(x => x.Value!.Errors.Select(e => new { key = x.Key, message = e.ErrorMessage ?? "Invalid value" }))
+                    .ToList();
+                return BadRequest(new { success = false, errors });
             }
 
             ViewBag.Products = await _productService.GetActiveProductsAsync();
