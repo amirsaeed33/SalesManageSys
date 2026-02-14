@@ -18,14 +18,14 @@ namespace SaleManagementSys.Controllers
         {
             var todaySales = await _saleService.GetTodaySalesAsync();
             var todayProfit = await _saleService.GetTodayProfitAsync();
-            var totalItemsSold = await _saleService.GetTotalProductsSoldAsync();
-            var sales = await _saleService.GetAllSalesAsync();
+            var todayItemsSold = await _saleService.GetTodayProductsSoldAsync();
+            var sales = await _saleService.GetTodaySalesForDisplayAsync();
 
             var cards = new List<DashboardCardViewModel>
             {
                 new() { Label = "Today Sales", Value = todaySales.ToString("C"), IconCssClass = "fas fa-dollar-sign", GradientCssClass = "card-gradient-primary" },
                 new() { Label = "Today Profit", Value = todayProfit.ToString("C"), IconCssClass = "fas fa-chart-line", GradientCssClass = "card-gradient-success" },
-                new() { Label = "Total Items Sold", Value = totalItemsSold.ToString(), IconCssClass = "fas fa-box", GradientCssClass = "card-gradient-warning" }
+                new() { Label = "Total Items Sold", Value = todayItemsSold.ToString(), IconCssClass = "fas fa-box", GradientCssClass = "card-gradient-warning" }
             };
 
             var viewModel = new DashboardViewModel

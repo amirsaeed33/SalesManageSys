@@ -24,6 +24,19 @@ namespace SaleManagementSys.Services
                 .ToListAsync();
         }
 
+        public async Task<List<Sale>> GetTodaySalesForDisplayAsync()
+        {
+            var today = DateTime.Today;
+            return await _context.Sales
+                .AsNoTracking()
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .Where(s => s.SaleDate.Date == today)
+                .OrderByDescending(s => s.SaleDate)
+                .ThenByDescending(s => s.Id)
+                .ToListAsync();
+        }
+
         public async Task<Sale?> GetSaleByIdAsync(int id)
         {
             return await _context.Sales
@@ -41,10 +54,10 @@ namespace SaleManagementSys.Services
                 sale.SaleDetails = new List<SaleDetail>();
             }
 
-            // Ensure SaleDate is set before saving
+            // Ensure SaleDate is set before saving (current DateTime, not user-editable)
             if (sale.SaleDate == default(DateTime) || sale.SaleDate == DateTime.MinValue)
             {
-                sale.SaleDate = DateTime.Today;
+                sale.SaleDate = DateTime.Now;
             }
 
             // Calculate TotalAmount and TotalProfit before saving
@@ -82,10 +95,13 @@ namespace SaleManagementSys.Services
                 .SumAsync(s => s.TotalProfit);
         }
 
-        public async Task<int> GetTotalProductsSoldAsync()
+        public async Task<int> GetTodayProductsSoldAsync()
         {
-            return await _context.SaleDetails
+            var today = DateTime.Today;
+            return await _context.Sales
                 .AsNoTracking()
+                .Where(s => s.SaleDate.Date == today)
+                .SelectMany(s => s.SaleDetails)
                 .SumAsync(sd => sd.Quantity);
         }
 

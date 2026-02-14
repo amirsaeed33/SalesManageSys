@@ -17,11 +17,7 @@ namespace SaleManagementSys.Models
         [Phone(ErrorMessage = "Invalid phone number format")]
         public string? PhoneNumber { get; set; } = "03321418639";
 
-        [Required]
-        [DataType(DataType.Date)]
-        [Display(Name = "Sale Date")]
-        public DateTime SaleDate { get; set; } = DateTime.Today;
-
+        // SaleDate is set automatically server-side (DateTime.Now), not user-editable
         public List<CreateSaleDetailViewModel> SaleDetails { get; set; } = new();
     }
 }

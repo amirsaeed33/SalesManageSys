@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SaleManagementSys.Data;
 using SaleManagementSys.Models;
 using SaleManagementSys.Services;
 
@@ -10,19 +8,17 @@ namespace SaleManagementSys.Controllers
     {
         private readonly ISaleService _saleService;
         private readonly IProductService _productService;
-        private readonly ApplicationDbContext _context;
 
-        public SaleController(ISaleService saleService, IProductService productService, ApplicationDbContext context)
+        public SaleController(ISaleService saleService, IProductService productService)
         {
             _saleService = saleService;
             _productService = productService;
-            _context = context;
         }
 
         // GET: Sale
         public async Task<IActionResult> Index()
         {
-            var sales = await _saleService.GetAllSalesAsync();
+            var sales = await _saleService.GetTodaySalesForDisplayAsync();
             return View(sales);
         }
 
@@ -40,12 +36,7 @@ namespace SaleManagementSys.Controllers
         {
             var products = await _productService.GetActiveProductsAsync();
             ViewBag.Products = products;
-
-            var model = new CreateSaleViewModel
-            {
-                SaleDate = DateTime.Today
-            };
-            return View(model);
+            return View(new CreateSaleViewModel());
         }
 
         // POST: Sale/Create
@@ -71,27 +62,17 @@ namespace SaleManagementSys.Controllers
                     {
                         CustomerName = model.CustomerName,
                         PhoneNumber = model.PhoneNumber,
-                        SaleDate = model.SaleDate,
-                        TotalAmount = validDetails.Sum(d => d.SalePrice * d.Quantity),
-                        TotalProfit = validDetails.Sum(d => (d.SalePrice - d.PurchasePrice) * d.Quantity)
-                    };
-
-                    _context.Sales.Add(sale);
-                    await _context.SaveChangesAsync();
-
-                    foreach (var d in validDetails)
-                    {
-                        _context.SaleDetails.Add(new SaleDetail
+                        SaleDate = DateTime.Now,
+                        SaleDetails = validDetails.Select(d => new SaleDetail
                         {
-                            SaleId = sale.Id,
                             ProductId = d.ProductId,
                             Quantity = d.Quantity,
                             SalePrice = d.SalePrice,
                             PurchasePrice = d.PurchasePrice
-                        });
-                    }
-                    await _context.SaveChangesAsync();
+                        }).ToList()
+                    };
 
+                    await _saleService.AddSaleAsync(sale);
                     return RedirectToAction("Index", "Dashboard");
                 }
                 catch (Exception ex)
