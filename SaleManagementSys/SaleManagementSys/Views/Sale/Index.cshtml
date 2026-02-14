@@ -83,8 +83,8 @@
     </div>
 </div>
 
-<!-- Create Sale Modal -->
-<div class="modal fade" id="createSaleModal" tabindex="-1" aria-labelledby="createSaleModalLabel" aria-hidden="true">
+<!-- Create Sale Modal (aria-hidden managed by Bootstrap when show/hide) -->
+<div class="modal fade" id="createSaleModal" tabindex="-1" aria-labelledby="createSaleModalLabel" aria-modal="true" role="dialog">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -182,12 +182,14 @@
                 }
 
                 function updateIndexes() {
-                    document.querySelectorAll('#saleItemsContainer tr').forEach(function(row, idx) {
+                    var rows = document.querySelectorAll('#saleItemsContainer tr');
+                    rows.forEach(function(row, idx) {
                         row.querySelectorAll('input, select').forEach(function(input) {
-                            if (input && input.name) input.name = input.name.replace(/SaleDetails\[\d+\]/, 'SaleDetails[' + idx + ']');
+                            if (input && input.name) input.name = input.name.replace(/SaleDetails\[\d+\]\./, 'SaleDetails[' + idx + '].');
                         });
                         row.setAttribute('data-index', idx);
                     });
+                    saleItemIndex = rows.length;
                 }
 
                 function calculateRowSubTotal(row) {
@@ -226,8 +228,7 @@
                 if (validationSummary) validationSummary.style.display = 'none';
 
                 const formData = new FormData(form);
-                const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
-                if (token) formData.append('__RequestVerificationToken', token);
+                /* FormData already includes __RequestVerificationToken from the form; do not append again */
 
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Saving...';
