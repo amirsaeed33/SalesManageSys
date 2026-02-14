@@ -2,55 +2,9 @@
 @{
     ViewData["Title"] = "Sales List";
 }
-
-<style>
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
-    }
-
-    .sales-table-container {
-        background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        padding: 1.5rem;
-        margin-top: 2rem;
-    }
-
-    .table {
-        margin-bottom: 0;
-    }
-
-    .table thead th {
-        background-color: #f8f9fa;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        letter-spacing: 0.5px;
-        border-bottom: 2px solid #dee2e6;
-        color: #495057;
-    }
-
-    .table tbody tr {
-        transition: background-color 0.2s;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-
-    .action-buttons {
-        white-space: nowrap;
-    }
-
-    .action-buttons .btn {
-        margin-right: 5px;
-    }
-
-    .action-buttons .btn:last-child {
-        margin-right: 0;
-    }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/sale.css" asp-append-version="true" />
+}
 
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">

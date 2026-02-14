@@ -1,0 +1,114 @@
+/* Sale Pages Styles (Index, Create) */
+.sales-table-container {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.sales-table-container .table {
+  margin-bottom: 0;
+}
+
+.sales-table-container .table thead th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #dee2e6;
+  color: #495057;
+}
+
+.sales-table-container .table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.sales-table-container .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.action-buttons {
+  white-space: nowrap;
+}
+
+.action-buttons .btn {
+  margin-right: 5px;
+}
+
+.action-buttons .btn:last-child {
+  margin-right: 0;
+}
+
+/* Sale Create Form */
+.form-container {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.form-container .table th {
+  font-weight: 600;
+  color: #495057;
+}
+
+.form-container .table td {
+  vertical-align: middle;
+}
+
+.subtotal-cell {
+  font-weight: 600;
+  color: #28a745;
+}
+
+#grandTotal {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.btn-add-item {
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.form-container .form-control,
+.form-container .form-select {
+  border-radius: 0.5rem;
+  border: 1px solid #ced4da;
+}
+
+.form-container .form-control:focus,
+.form-container .form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-submit,
+.btn-cancel {
+  border-radius: 0.5rem;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+}

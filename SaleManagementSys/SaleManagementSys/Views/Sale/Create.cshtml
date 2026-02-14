@@ -3,22 +3,9 @@
     ViewData["Title"] = "Create New Sale";
     var products = ViewBag.Products as List<SaleManagementSys.Models.Product> ?? new List<SaleManagementSys.Models.Product>();
 }
-
-<style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
-    .form-container { background: white; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); padding: 2rem; margin-top: 2rem; }
-    .form-section { margin-bottom: 2rem; }
-    .section-title { font-size: 1.5rem; font-weight: 600; color: #495057; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e9ecef; }
-    .table th { font-weight: 600; color: #495057; }
-    .table td { vertical-align: middle; }
-    .subtotal-cell { font-weight: 600; color: #28a745; }
-    #grandTotal { font-size: 1.25rem; font-weight: 700; color: #007bff; }
-    .btn-add-item { border-radius: 0.5rem; margin-bottom: 1rem; }
-    .form-label { font-weight: 600; color: #495057; margin-bottom: 0.5rem; }
-    .form-control, .form-select { border-radius: 0.5rem; border: 1px solid #ced4da; }
-    .form-control:focus, .form-select:focus { border-color: #667eea; box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25); }
-    .btn-submit, .btn-cancel { border-radius: 0.5rem; padding: 0.75rem 2rem; font-weight: 600; }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/sale.css" asp-append-version="true" />
+}
 
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -67,7 +54,7 @@
                                 <th class="text-end">Sale Price</th>
                                 <th class="text-end">Purchase Price</th>
                                 <th class="text-end">SubTotal</th>
-                                <th class="text-center" style="width: 100px;">Action</th>
+                                <th class="text-center col-action-sm">Action</th>
                             </tr>
                         </thead>
                         <tbody id="saleItemsContainer"></tbody>
