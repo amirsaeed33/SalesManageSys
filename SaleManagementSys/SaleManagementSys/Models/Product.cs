@@ -21,6 +21,10 @@ namespace SaleManagementSys.Models
         [StringLength(1000)]
         public string? Description { get; set; }
 
+        [StringLength(500)]
+        [Display(Name = "Image URL")]
+        public string? ImageUrl { get; set; }
+
         [Display(Name = "Active")]
         public bool IsActive { get; set; } = true;
     }

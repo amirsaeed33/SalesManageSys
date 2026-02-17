@@ -19,6 +19,12 @@ namespace SaleManagementSys.Controllers
             return View(products);
         }
 
+        public async Task<IActionResult> Catalog()
+        {
+            var products = await _productService.GetActiveProductsAsync();
+            return View(products);
+        }
+
         [HttpGet]
         public IActionResult Create() => RedirectToAction(nameof(Index));
 
@@ -32,6 +38,7 @@ namespace SaleManagementSys.Controllers
                 TempData["ProductId"] = product.Id;
                 TempData["ProductName"] = product.Name;
                 TempData["ProductPrice"] = product.DefaultPurchasePrice;
+                TempData["ProductImageUrl"] = product.ImageUrl ?? "";
                 TempData["ProductDescription"] = product.Description ?? "";
                 TempData["ProductIsActive"] = product.IsActive;
                 return RedirectToAction(nameof(Index));

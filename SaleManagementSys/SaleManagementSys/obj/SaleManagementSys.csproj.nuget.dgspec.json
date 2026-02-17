@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\GitHub\\SalesSystem\\SalesManagementSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {}
+    "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {}
   },
   "projects": {
-    "D:\\GitHub\\SalesSystem\\SalesManagementSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {
+    "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GitHub\\SalesSystem\\SalesManagementSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
+        "projectUniqueName": "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
         "projectName": "SaleManagementSys",
-        "projectPath": "D:\\GitHub\\SalesSystem\\SalesManagementSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
-        "packagesPath": "C:\\Users\\Qasim\\.nuget\\packages\\",
-        "outputPath": "D:\\GitHub\\SalesSystem\\SalesManagementSys\\SaleManagementSys\\SaleManagementSys\\obj\\",
+        "projectPath": "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
+        "packagesPath": "C:\\Users\\Al hamad\\.nuget\\packages\\",
+        "outputPath": "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Qasim\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Al hamad\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -87,7 +87,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.311/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
