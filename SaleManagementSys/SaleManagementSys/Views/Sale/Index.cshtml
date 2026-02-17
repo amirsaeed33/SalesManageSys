@@ -2,7 +2,7 @@
 @model List<SaleManagementSys.Models.Sale>
 @{
     ViewData["Title"] = "Sales List";
-    var pkrCulture = new CultureInfo("ur-PK");
+    var pkrCulture = CultureInfo.GetCultureInfo("en-PK");
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/sale.css" asp-append-version="true" />
@@ -42,8 +42,8 @@
                                 <td>@index</td>
                                 <td>@(sale?.CustomerName ?? "N/A")</td>
                                 <td>@(sale?.PhoneNumber ?? "N/A")</td>
-                                <td class="fw-bold text-success">@(sale?.TotalAmount.ToString("C", pkrCulture) ?? "$0.00")</td>
-                                <td class="fw-bold text-primary">@(sale?.TotalProfit.ToString("C", pkrCulture) ?? "$0.00")</td>
+                                <td class="fw-bold text-success">@(sale?.TotalAmount.ToString("C", pkrCulture) ?? "Rs. 0.00")</td>
+                                <td class="fw-bold text-primary">@(sale?.TotalProfit.ToString("C", pkrCulture) ?? "Rs. 0.00")</td>
                                 <td>@(sale?.SaleDate.ToString("MM/dd/yyyy hh:mm tt") ?? "N/A")</td>
                                 <td class="action-buttons">
                                     @if (sale != null)

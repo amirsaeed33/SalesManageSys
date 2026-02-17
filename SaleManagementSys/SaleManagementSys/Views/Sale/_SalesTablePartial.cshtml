@@ -1,6 +1,8 @@
 @model List<SaleManagementSys.Models.Sale>
+@using System.Globalization
 @{
     var index = 1;
+    var pkrCulture = CultureInfo.GetCultureInfo("en-PK");
 }
 @if (Model != null && Model.Any())
 {
@@ -10,8 +12,8 @@
             <td>@(index++)</td>
             <td>@(sale?.CustomerName ?? "N/A")</td>
             <td>@(sale?.PhoneNumber ?? "N/A")</td>
-            <td class="fw-bold text-success">@(sale?.TotalAmount.ToString("C") ?? "$0.00")</td>
-            <td class="fw-bold text-primary">@(sale?.TotalProfit.ToString("C") ?? "$0.00")</td>
+            <td class="fw-bold text-success">@(sale?.TotalAmount.ToString("C", pkrCulture) ?? "Rs. 0.00")</td>
+            <td class="fw-bold text-primary">@(sale?.TotalProfit.ToString("C", pkrCulture) ?? "Rs. 0.00")</td>
             <td>@(sale?.SaleDate.ToString("MM/dd/yyyy") ?? "N/A")</td>
             <td class="action-buttons">
                 @if (sale != null)

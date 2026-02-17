@@ -11,27 +11,59 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invoice #@Model.Id - @orgName</title>
-    <link rel="stylesheet" href="~/css/invoice.css" asp-append-version="true" />
+    <link rel="stylesheet" href="@Url.Content("~/css/invoice.css")" asp-append-version="true" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; line-height: 1.5; color: #222; background: #fff; padding: 15px; }
+        .invoice-container { max-width: 210mm; width: 100%; margin: 0 auto; background: #fff; padding: 24px; }
+        .invoice-shop-header { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #222; }
+        .invoice-shop-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #111; letter-spacing: 0.5px; }
+        .invoice-shop-address { font-size: 12px; line-height: 1.6; color: #333; white-space: pre-line; }
+        .invoice-shop-phone { font-size: 13px; color: #333; font-weight: 500; }
+        .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .invoice-title { font-size: 26px; font-weight: 700; margin: 0; color: #111; letter-spacing: 1px; }
+        .invoice-meta { text-align: right; }
+        .invoice-meta p { margin: 4px 0; font-size: 13px; }
+        .invoice-section-label { font-size: 11px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .invoice-billto { margin-bottom: 20px; padding: 12px; background: #f9f9f9; border-left: 3px solid #333; }
+        .invoice-billto strong { display: block; margin-bottom: 6px; font-size: 12px; color: #444; }
+        .invoice-label { font-weight: 600; display: inline-block; min-width: 90px; color: #333; }
+        .products-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .products-table th { background: #333; color: #fff; padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 600; }
+        .products-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #ddd; }
+        .products-table tbody tr:hover { background: #fafafa; }
+        .products-table .text-right { text-align: right; }
+        .products-table .text-center { text-align: center; }
+        .grand-total { margin-top: 20px; padding: 16px 20px; background: #f5f5f5; border: 2px solid #333; text-align: right; }
+        .grand-total-label { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .grand-total-amount { font-size: 20px; font-weight: 700; color: #111; }
+        .invoice-footer-section { margin-top: 24px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 12px; line-height: 1.6; color: #333; }
+        .invoice-footer-section strong { display: block; margin-bottom: 6px; font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        .invoice-footer-section .invoice-shop-address { white-space: pre-line; }
+        .invoice-notes { margin-top: 16px; padding: 12px; background: #fafafa; border: 1px dashed #999; min-height: 60px; }
+        .invoice-notes strong { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        .print-actions { text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid #ddd; }
+        .btn-print { background: #007bff; color: #fff; border: none; padding: 10px 20px; font-size: 14px; cursor: pointer; border-radius: 4px; font-weight: 600; }
+        .btn-back { background: #6c757d; color: #fff; padding: 10px 20px; font-size: 14px; text-decoration: none; display: inline-block; border-radius: 4px; margin-left: 10px; }
+        .separator { border-top: 1px dashed #999; margin: 16px 0; }
+        @@media print {
+            body { padding: 0; background: #fff; }
+            .invoice-container { max-width: 100%; padding: 0; }
+            .products-table tbody tr:hover { background: transparent !important; }
+            .print-actions, .btn-print, .btn-back { display: none !important; }
+        }
+        @@page { size: A4; margin: 15mm; }
+    </style>
 </head>
 <body>
     <div class="invoice-container">
-        <!-- Shop Header (dynamic from Organization Settings) -->
+        <!-- Shop Header (no logo, no address here) -->
         <div class="invoice-shop-header">
-            @if (!string.IsNullOrWhiteSpace(org?.LogoUrl))
+            <div class="invoice-shop-name">@orgName</div>
+            @if (!string.IsNullOrWhiteSpace(org?.PhoneNumber))
             {
-                <img src="@org.LogoUrl" alt="@orgName" class="invoice-shop-logo" />
+                <div class="invoice-shop-phone">Tel: @org.PhoneNumber</div>
             }
-            <div class="invoice-shop-info">
-                <div class="invoice-shop-name">@orgName</div>
-                @if (!string.IsNullOrWhiteSpace(org?.Address))
-                {
-                    <div class="invoice-shop-address">@org.Address</div>
-                }
-                @if (!string.IsNullOrWhiteSpace(org?.PhoneNumber))
-                {
-                    <div class="invoice-shop-phone">Tel: @org.PhoneNumber</div>
-                }
-            </div>
         </div>
 
         <div class="separator"></div>
@@ -46,8 +78,8 @@
         </div>
 
         <!-- Bill To (Customer) -->
+        <div class="invoice-section-label">Bill To</div>
         <div class="invoice-billto">
-            <strong>Bill To:</strong><br />
             @Model.CustomerName
             @if (!string.IsNullOrEmpty(Model.PhoneNumber))
             {
@@ -86,6 +118,19 @@
         <div class="grand-total">
             <div class="grand-total-label">GRAND TOTAL</div>
             <div class="grand-total-amount">@Model.TotalAmount.ToString("N2")</div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(org?.Address))
+        {
+            <div class="invoice-footer-section">
+                <strong>Address</strong>
+                <span class="invoice-shop-address">@org.Address</span>
+            </div>
+        }
+
+        <div class="invoice-notes">
+            <strong>Notes</strong>
+            <div style="margin-top:8px;color:#666;">Thank you for your business. Please retain this invoice for your records.</div>
         </div>
 
         <!-- Print Actions (Hidden during print) -->

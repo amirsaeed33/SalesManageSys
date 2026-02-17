@@ -1,6 +1,18 @@
 @model SaleManagementSys.ViewComponents.OrganizationNameViewComponent.OrganizationBrandViewModel
-@if (Model.ShowLogo && !string.IsNullOrWhiteSpace(Model.LogoUrl))
+@if (Model.ShowLogo)
 {
-    <img src="@Model.LogoUrl" alt="@Model.Name" class="navbar-brand-logo me-2" />
+    <span class="navbar-brand-circle">
+        @if (!string.IsNullOrWhiteSpace(Model.LogoUrl))
+        {
+            <img src="@Model.LogoUrl" alt="@Model.Name" class="navbar-brand-circle-img" />
+        }
+        else
+        {
+            <span class="navbar-brand-initials">@Model.Initials</span>
+        }
+    </span>
 }
-@Model.Name
+else
+{
+    @Model.Name
+}

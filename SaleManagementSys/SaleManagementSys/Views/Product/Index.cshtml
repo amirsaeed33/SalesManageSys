@@ -1,7 +1,9 @@
 @model List<SaleManagementSys.Models.Product>
+@using System.Globalization
 @using System.Text.Json
 @{
     ViewData["Title"] = "Products";
+    var pkrCulture = CultureInfo.GetCultureInfo("en-PK");
 }
 @section Styles {
     <style>
@@ -77,7 +79,7 @@
                             data-active="@(p.IsActive ? "true" : "false")">
                             <td>@i</td>
                             <td>@p.Name</td>
-                            <td>@p.DefaultPurchasePrice.ToString("C")</td>
+                            <td>@p.DefaultPurchasePrice.ToString("C", pkrCulture)</td>
                             <td>@(p.Description ?? "—")</td>
                             <td class="text-center">
                                 @if (p.IsActive)

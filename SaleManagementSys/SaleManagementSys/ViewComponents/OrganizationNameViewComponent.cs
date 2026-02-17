@@ -10,6 +10,8 @@ namespace SaleManagementSys.ViewComponents
             public string Name { get; set; } = "SaleManagementSys";
             public string? LogoUrl { get; set; }
             public bool ShowLogo { get; set; }
+            /// <summary>First two letters of Name, uppercase (for avatar when no logo).</summary>
+            public string Initials { get; set; } = "SM";
         }
 
         private readonly IOrganizationSettingsService _settings;
@@ -23,11 +25,15 @@ namespace SaleManagementSys.ViewComponents
         {
             var org = await _settings.GetAsync();
             var name = !string.IsNullOrWhiteSpace(org?.Name) ? org.Name : "SaleManagementSys";
+            var initials = name.Length >= 2
+                ? char.ToUpperInvariant(name[0]).ToString() + char.ToUpperInvariant(name[1])
+                : name.Length == 1 ? char.ToUpperInvariant(name[0]).ToString() : "SM";
             var model = new OrganizationBrandViewModel
             {
                 Name = name,
                 LogoUrl = org?.LogoUrl,
-                ShowLogo = showLogo
+                ShowLogo = showLogo,
+                Initials = initials
             };
             return View(model);
         }
