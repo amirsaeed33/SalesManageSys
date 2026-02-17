@@ -6,15 +6,21 @@
 }
 
 <div class="container-fluid px-4 py-4">
-    <h2 class="mb-4"><i class="fas fa-store me-2"></i>Our Products</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0"><i class="fas fa-store me-2"></i>Our Products</h2>
+        <button type="button" class="btn btn-primary btn-cart" id="btnPlaceOrder" style="display:none;">
+            <i class="fas fa-shopping-cart me-2"></i>Place Order <span id="cartCount" class="badge bg-light text-dark ms-1">0</span>
+        </button>
+    </div>
 
     @if (Model != null && Model.Any())
     {
         <div class="row g-4">
             @foreach (var product in Model)
             {
+                var salePrice = product.DefaultSalePrice ?? product.DefaultPurchasePrice;
                 <div class="col-md-4 col-sm-6 col-lg-3">
-                    <div class="card product-card h-100 shadow-sm">
+                    <div class="card product-card h-100 shadow-sm" data-product-id="@product.Id" data-product-name="@product.Name" data-sale-price="@salePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" data-purchase-price="@product.DefaultPurchasePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
                         <div class="product-card-image-wrapper">
                             @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
                             {
@@ -27,7 +33,10 @@
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-dark">@product.Name</h5>
-                            <p class="card-text text-success fw-bold fs-5 mb-0 mt-auto">@((product.DefaultSalePrice ?? product.DefaultPurchasePrice).ToString("C", pkrCulture))</p>
+                            <p class="card-text text-success fw-bold fs-5 mb-2">@salePrice.ToString("C", pkrCulture)</p>
+                            <button type="button" class="btn btn-success btn-add-order mt-auto">
+                                <i class="fas fa-plus me-1"></i>Add to Order
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -42,6 +51,52 @@
             <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary mt-3"><i class="fas fa-home me-2"></i>Back to Dashboard</a>
         </div>
     }
+</div>
+
+<!-- Place Order Modal -->
+<div class="modal fade" id="placeOrderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-shopping-bag me-2"></i>Place Your Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="placeOrderForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Customer Name <span class="text-danger">*</span></label>
+                            <input type="text" name="CustomerName" id="orderCustomerName" class="form-control" required placeholder="Your name" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="PhoneNumber" id="orderPhoneNumber" class="form-control" placeholder="Your phone" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea name="Address" id="orderAddress" class="form-control" rows="2" placeholder="Delivery / billing address (optional)"></textarea>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead><tr><th>Product</th><th class="text-end">Qty</th><th class="text-end">Price</th><th class="text-end">Subtotal</th><th></th></tr></thead>
+                            <tbody id="orderCartBody"></tbody>
+                            <tfoot><tr><th colspan="3" class="text-end">Grand Total:</th><th class="text-end" id="orderGrandTotal">0.00</th><th></th></tr></tfoot>
+                        </table>
+                    </div>
+                    <div id="orderSuccess" class="alert alert-success d-none"></div>
+                    <div id="orderError" class="alert alert-danger d-none"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitOrder">
+                        <i class="fas fa-check me-1"></i>Place Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -64,4 +119,172 @@
         height: 100%;
         object-fit: cover;
     }
+    .btn-add-order { width: 100%; }
 </style>
+
+@section Scripts {
+<script>
+(function() {
+    var CART_KEY = 'store_cart';
+    var createOrderUrl = '@Url.Action("Create", "Order")';
+
+    function getCart() {
+        try {
+            var json = localStorage.getItem(CART_KEY);
+            return json ? JSON.parse(json) : [];
+        } catch (e) { return []; }
+    }
+
+    function saveCart(items) {
+        localStorage.setItem(CART_KEY, JSON.stringify(items));
+        updateCartUI();
+    }
+
+    function addToCart(productId, name, salePrice, purchasePrice, qty) {
+        qty = qty || 1;
+        var cart = getCart();
+        var existing = cart.find(function(x) { return x.productId === productId; });
+        if (existing) existing.quantity += qty;
+        else cart.push({ productId: productId, name: name, salePrice: parseFloat(salePrice), purchasePrice: parseFloat(purchasePrice), quantity: qty });
+        saveCart(cart);
+    }
+
+    function removeFromCart(productId) {
+        var cart = getCart().filter(function(x) { return x.productId !== productId; });
+        saveCart(cart);
+        renderOrderTable();
+        if (cart.length === 0) {
+            var modal = bootstrap.Modal.getInstance(document.getElementById('placeOrderModal'));
+            if (modal) modal.hide();
+        }
+    }
+
+    function updateCartUI() {
+        var cart = getCart();
+        var count = cart.reduce(function(s, x) { return s + x.quantity; }, 0);
+        var btn = document.getElementById('btnPlaceOrder');
+        var badge = document.getElementById('cartCount');
+        if (btn && badge) {
+            btn.style.display = count > 0 ? 'inline-block' : 'none';
+            badge.textContent = count;
+        }
+    }
+
+    function renderOrderTable() {
+        var cart = getCart();
+        var tbody = document.getElementById('orderCartBody');
+        var totalEl = document.getElementById('orderGrandTotal');
+        if (!tbody || !totalEl) return;
+        var total = 0;
+        tbody.innerHTML = '';
+        cart.forEach(function(item) {
+            var subtotal = item.quantity * item.salePrice;
+            total += subtotal;
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + (item.name || '') + '</td>' +
+                '<td class="text-end">' + item.quantity + '</td>' +
+                '<td class="text-end">' + item.salePrice.toFixed(2) + '</td>' +
+                '<td class="text-end">' + subtotal.toFixed(2) + '</td>' +
+                '<td><button type="button" class="btn btn-sm btn-outline-danger remove-cart-item" data-id="' + item.productId + '"><i class="fas fa-trash"></i></button></td>';
+            tbody.appendChild(tr);
+        });
+        totalEl.textContent = total.toFixed(2);
+        tbody.querySelectorAll('.remove-cart-item').forEach(function(btn) {
+            btn.addEventListener('click', function() { removeFromCart(parseInt(this.getAttribute('data-id'))); });
+        });
+    }
+
+    document.querySelectorAll('.btn-add-order').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var card = this.closest('.product-card');
+            if (!card) return;
+            addToCart(
+                parseInt(card.dataset.productId),
+                card.dataset.productName || '',
+                card.dataset.salePrice || '0',
+                card.dataset.purchasePrice || '0',
+                1
+            );
+        });
+    });
+
+    document.getElementById('btnPlaceOrder').addEventListener('click', function() {
+        renderOrderTable();
+        document.getElementById('orderSuccess').classList.add('d-none');
+        document.getElementById('orderError').classList.add('d-none');
+        var modal = new bootstrap.Modal(document.getElementById('placeOrderModal'));
+        modal.show();
+    });
+
+    document.getElementById('placeOrderForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var cart = getCart();
+        if (cart.length === 0) {
+            document.getElementById('orderError').textContent = 'Your order is empty.';
+            document.getElementById('orderError').classList.remove('d-none');
+            return;
+        }
+        var customerName = document.getElementById('orderCustomerName').value.trim();
+        if (!customerName) {
+            document.getElementById('orderError').textContent = 'Please enter your name.';
+            document.getElementById('orderError').classList.remove('d-none');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('CustomerName', customerName);
+        formData.append('PhoneNumber', document.getElementById('orderPhoneNumber').value.trim() || '');
+        formData.append('Address', document.getElementById('orderAddress').value.trim() || '');
+        formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+        cart.forEach(function(item, i) {
+            formData.append('OrderDetails[' + i + '].ProductId', item.productId);
+            formData.append('OrderDetails[' + i + '].Quantity', item.quantity);
+            formData.append('OrderDetails[' + i + '].SalePrice', item.salePrice);
+            formData.append('OrderDetails[' + i + '].PurchasePrice', item.purchasePrice);
+        });
+
+        var submitBtn = document.getElementById('btnSubmitOrder');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Placing...';
+
+        fetch(createOrderUrl, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json().catch(function() { return { success: false, errors: [{ message: 'Invalid response' }] }; }); })
+        .then(function(data) {
+            if (data.success) {
+                saveCart([]);
+                document.getElementById('orderSuccess').textContent = 'Order placed successfully! Thank you for your order.';
+                document.getElementById('orderSuccess').classList.remove('d-none');
+                document.getElementById('orderError').classList.add('d-none');
+                submitBtn.disabled = true;
+                document.getElementById('orderCustomerName').readOnly = true;
+                document.getElementById('orderPhoneNumber').readOnly = true;
+                setTimeout(function() {
+                    bootstrap.Modal.getInstance(document.getElementById('placeOrderModal')).hide();
+                    document.getElementById('placeOrderForm').reset();
+                    document.getElementById('orderCustomerName').readOnly = false;
+                    document.getElementById('orderPhoneNumber').readOnly = false;
+                }, 2000);
+            } else {
+                document.getElementById('orderError').textContent = (data.errors && data.errors[0] && data.errors[0].message) || 'Failed to place order. Please try again.';
+                document.getElementById('orderError').classList.remove('d-none');
+            }
+        })
+        .catch(function() {
+            document.getElementById('orderError').textContent = 'Failed to place order. Please try again.';
+            document.getElementById('orderError').classList.remove('d-none');
+        })
+        .finally(function() {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check me-1"></i>Place Order';
+        });
+    });
+
+    updateCartUI();
+})();
+</script>
+}

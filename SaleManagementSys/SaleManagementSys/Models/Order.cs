@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SaleManagementSys.Models
 {
-    public class Sale
+    public class Order
     {
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Customer name is required")]
+        [Required]
         [StringLength(200)]
         [Display(Name = "Customer Name")]
         public string CustomerName { get; set; } = string.Empty;
@@ -23,23 +23,27 @@ namespace SaleManagementSys.Models
         public string? Address { get; set; }
 
         [Required]
-        [DataType(DataType.Date)]
-        [Display(Name = "Sale Date")]
-        public DateTime SaleDate { get; set; }
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Order Date")]
+        public DateTime OrderDate { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         [Display(Name = "Total Amount")]
-        [Range(0, double.MaxValue, ErrorMessage = "Total amount must be greater than or equal to 0")]
         public decimal TotalAmount { get; set; }
 
+        /// <summary>Pending = from catalog not yet processed; Processed = converted to sale; Cancelled.</summary>
         [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Total Profit")]
-        [Range(0, double.MaxValue, ErrorMessage = "Total profit must be greater than or equal to 0")]
-        public decimal TotalProfit { get; set; }
+        [StringLength(20)]
+        public string Status { get; set; } = "Pending";
 
-        // Navigation property
-        public virtual ICollection<SaleDetail> SaleDetails { get; set; } = new List<SaleDetail>();
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+    }
+
+    public static class OrderStatus
+    {
+        public const string Pending = "Pending";
+        public const string Processed = "Processed";
+        public const string Cancelled = "Cancelled";
     }
 }

@@ -85,6 +85,10 @@
             {
                 <br /><span>Phone: @Model.PhoneNumber</span>
             }
+            @if (!string.IsNullOrWhiteSpace(Model.Address))
+            {
+                <br /><span>Address: @Model.Address</span>
+            }
         </div>
 
         <div class="separator"></div>

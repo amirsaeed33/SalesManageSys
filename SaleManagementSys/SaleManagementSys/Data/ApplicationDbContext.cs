@@ -12,6 +12,8 @@ namespace SaleManagementSys.Data
 
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleDetail> SaleDetails { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
 
@@ -28,6 +30,8 @@ namespace SaleManagementSys.Data
                     .HasMaxLength(200);
                 entity.Property(e => e.PhoneNumber)
                     .HasMaxLength(20);
+                entity.Property(e => e.Address)
+                    .HasMaxLength(500);
                 entity.Property(e => e.SaleDate)
                     .IsRequired();
                 entity.Property(e => e.TotalAmount)
@@ -48,6 +52,7 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.Description).HasMaxLength(1000);
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
                 entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.StockQuantity).HasDefaultValue(0);
             });
 
             // Configure SaleDetail entity
@@ -72,6 +77,39 @@ namespace SaleManagementSys.Data
                 .HasOne(sd => sd.Product)
                 .WithMany()
                 .HasForeignKey(sd => sd.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Order entity
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.CustomerName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+                entity.Property(e => e.Address).HasMaxLength(500);
+                entity.Property(e => e.OrderDate).IsRequired();
+                entity.Property(e => e.TotalAmount).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+            });
+
+            // Configure OrderDetail entity
+            modelBuilder.Entity<OrderDetail>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SalePrice).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.PurchasePrice).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Quantity).IsRequired();
+            });
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(od => od.Order)
+                .WithMany(o => o.OrderDetails)
+                .HasForeignKey(od => od.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(od => od.Product)
+                .WithMany()
+                .HasForeignKey(od => od.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configure OrganizationSettings (single-row table)

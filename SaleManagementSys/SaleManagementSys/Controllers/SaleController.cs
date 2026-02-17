@@ -84,6 +84,7 @@ namespace SaleManagementSys.Controllers
                     {
                         CustomerName = model.CustomerName,
                         PhoneNumber = model.PhoneNumber,
+                        Address = model.Address,
                         SaleDate = DateTime.Now,
                         SaleDetails = validDetails.Select(d => new SaleDetail
                         {

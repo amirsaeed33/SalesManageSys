@@ -14,12 +14,12 @@ namespace SaleManagementSys.Models
         public string Name { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Default Purchase Price")]
+        [Display(Name = "Purchase Price")]
         [Range(0, double.MaxValue, ErrorMessage = "Purchase price must be >= 0")]
         public decimal DefaultPurchasePrice { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Default Sale Price")]
+        [Display(Name = "Sale Price")]
         [Range(0, double.MaxValue, ErrorMessage = "Sale price must be >= 0")]
         public decimal? DefaultSalePrice { get; set; }
 
@@ -32,5 +32,9 @@ namespace SaleManagementSys.Models
 
         [Display(Name = "Active")]
         public bool IsActive { get; set; } = true;
+
+        [Display(Name = "Stock Quantity")]
+        [Range(0, int.MaxValue, ErrorMessage = "Stock quantity must be >= 0")]
+        public int StockQuantity { get; set; }
     }
 }

@@ -56,9 +56,10 @@ namespace SaleManagementSys.Services
             if (product == null)
                 return false;
 
-            // Check if product is used in any sale
-            var isUsed = await _context.SaleDetails.AnyAsync(sd => sd.ProductId == id);
-            if (isUsed)
+            // Check if product is used in any sale or order
+            var isUsedInSale = await _context.SaleDetails.AnyAsync(sd => sd.ProductId == id);
+            var isUsedInOrder = await _context.OrderDetails.AnyAsync(od => od.ProductId == id);
+            if (isUsedInSale || isUsedInOrder)
                 return false;
 
             _context.Products.Remove(product);
