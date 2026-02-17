@@ -8,11 +8,13 @@ namespace SaleManagementSys.Controllers
     {
         private readonly ISaleService _saleService;
         private readonly IProductService _productService;
+        private readonly IOrganizationSettingsService _orgSettings;
 
-        public SaleController(ISaleService saleService, IProductService productService)
+        public SaleController(ISaleService saleService, IProductService productService, IOrganizationSettingsService orgSettings)
         {
             _saleService = saleService;
             _productService = productService;
+            _orgSettings = orgSettings;
         }
 
         // GET: Sale
@@ -28,6 +30,7 @@ namespace SaleManagementSys.Controllers
             var sale = await _saleService.GetSaleByIdAsync(id);
             if (sale == null)
                 return NotFound();
+            ViewBag.Organization = await _orgSettings.GetAsync();
             return View(sale);
         }
 

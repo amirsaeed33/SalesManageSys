@@ -2,32 +2,57 @@
 @{
     ViewData["Title"] = "Print Invoice";
     Layout = null;
+    var org = ViewBag.Organization as SaleManagementSys.Models.OrganizationSettings;
+    var orgName = !string.IsNullOrWhiteSpace(org?.Name) ? org.Name : "SaleManagementSys";
 }
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invoice - @Model.Id</title>
+    <title>Invoice #@Model.Id - @orgName</title>
     <link rel="stylesheet" href="~/css/invoice.css" asp-append-version="true" />
 </head>
 <body>
     <div class="invoice-container">
-        <!-- Shop Name -->
-        <div class="shop-name">
-            Qasim & Asim Baby shops
+        <!-- Shop Header (dynamic from Organization Settings) -->
+        <div class="invoice-shop-header">
+            @if (!string.IsNullOrWhiteSpace(org?.LogoUrl))
+            {
+                <img src="@org.LogoUrl" alt="@orgName" class="invoice-shop-logo" />
+            }
+            <div class="invoice-shop-info">
+                <div class="invoice-shop-name">@orgName</div>
+                @if (!string.IsNullOrWhiteSpace(org?.Address))
+                {
+                    <div class="invoice-shop-address">@org.Address</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(org?.PhoneNumber))
+                {
+                    <div class="invoice-shop-phone">Tel: @org.PhoneNumber</div>
+                }
+            </div>
         </div>
+
+        <div class="separator"></div>
 
         <!-- Invoice Header -->
         <div class="invoice-header">
-            <p><span class="invoice-label">Invoice #:</span> @Model.Id</p>
-            <p><span class="invoice-label">Customer:</span> @Model.CustomerName</p>
+            <h2 class="invoice-title">INVOICE</h2>
+            <div class="invoice-meta">
+                <p><span class="invoice-label">Invoice #:</span> @Model.Id</p>
+                <p><span class="invoice-label">Date:</span> @Model.SaleDate.ToString("dd/MM/yyyy hh:mm tt")</p>
+            </div>
+        </div>
+
+        <!-- Bill To (Customer) -->
+        <div class="invoice-billto">
+            <strong>Bill To:</strong><br />
+            @Model.CustomerName
             @if (!string.IsNullOrEmpty(Model.PhoneNumber))
             {
-                <p><span class="invoice-label">Phone:</span> @Model.PhoneNumber</p>
+                <br /><span>Phone: @Model.PhoneNumber</span>
             }
-            <p><span class="invoice-label">Date:</span> @Model.SaleDate.ToString("dd/MM/yyyy hh:mm tt")</p>
         </div>
 
         <div class="separator"></div>
