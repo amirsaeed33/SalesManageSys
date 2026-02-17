@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "8RFu7GwF2Vo=",
+  "dgSpecHash": "UUugX2mRpHE=",
   "success": true,
-  "projectFilePath": "e:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
+  "projectFilePath": "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Al hamad\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\Al hamad\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",

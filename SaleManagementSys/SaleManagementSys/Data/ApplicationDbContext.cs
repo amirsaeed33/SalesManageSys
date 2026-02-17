@@ -13,6 +13,7 @@ namespace SaleManagementSys.Data
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleDetail> SaleDetails { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -71,6 +72,16 @@ namespace SaleManagementSys.Data
                 .WithMany()
                 .HasForeignKey(sd => sd.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure OrganizationSettings (single-row table)
+            modelBuilder.Entity<OrganizationSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).HasMaxLength(200);
+                entity.Property(e => e.LogoUrl).HasMaxLength(500);
+                entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+                entity.Property(e => e.Address).HasMaxLength(500);
+            });
         }
     }
 }

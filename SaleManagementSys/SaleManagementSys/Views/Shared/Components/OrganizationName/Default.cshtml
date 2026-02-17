@@ -1,0 +1,6 @@
+@model SaleManagementSys.ViewComponents.OrganizationNameViewComponent.OrganizationBrandViewModel
+@if (Model.ShowLogo && !string.IsNullOrWhiteSpace(Model.LogoUrl))
+{
+    <img src="@Model.LogoUrl" alt="@Model.Name" class="navbar-brand-logo me-2" />
+}
+@Model.Name

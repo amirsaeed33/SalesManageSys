@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "e:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {}
+    "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {}
   },
   "projects": {
-    "e:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {
+    "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "e:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
+        "projectUniqueName": "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
         "projectName": "SaleManagementSys",
-        "projectPath": "e:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
+        "projectPath": "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\SaleManagementSys.csproj",
         "packagesPath": "C:\\Users\\Al hamad\\.nuget\\packages\\",
-        "outputPath": "e:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\obj\\",
+        "outputPath": "E:\\Github\\SalesManageSys\\SaleManagementSys\\SaleManagementSys\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
