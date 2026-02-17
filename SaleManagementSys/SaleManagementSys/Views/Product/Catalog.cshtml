@@ -21,7 +21,7 @@
                 var salePrice = product.DefaultSalePrice ?? product.DefaultPurchasePrice;
                 <div class="col-md-4 col-sm-6 col-lg-3">
                     <div class="card product-card h-100 shadow-sm" data-product-id="@product.Id" data-product-name="@product.Name" data-sale-price="@salePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" data-purchase-price="@product.DefaultPurchasePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
-                        <div class="product-card-image-wrapper">
+                        <div class="product-card-image-wrapper catalog-img-open" role="button" tabindex="0" title="Click to open / zoom picture" data-img-src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "https://placehold.co/400x300/e9ecef/6c757d?text=" + Uri.EscapeDataString(product.Name) : product.ImageUrl)" data-img-alt="@product.Name">
                             @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
                             {
                                 <img src="@product.ImageUrl" alt="@product.Name" class="card-img-top product-card-img" onerror="this.onerror=null; this.src='https://placehold.co/400x300/e9ecef/6c757d?text=No+Image';" />
@@ -30,6 +30,7 @@
                             {
                                 <img src="https://placehold.co/400x300/e9ecef/6c757d?text=@Uri.EscapeDataString(product.Name)" alt="@product.Name" class="card-img-top product-card-img" />
                             }
+                            <span class="catalog-img-hint"><i class="fas fa-search-plus"></i> Open</span>
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-dark">@product.Name</h5>
@@ -99,7 +100,60 @@
     </div>
 </div>
 
+<!-- Image viewer modal (zoom / open picture) -->
+<div class="modal fade" id="imageViewerModal" tabindex="-1" aria-labelledby="imageViewerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="imageViewerModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2 text-center image-viewer-body">
+                <div class="image-viewer-wrap">
+                    <img id="imageViewerImg" src="" alt="" class="image-viewer-img" />
+                </div>
+            </div>
+            <div class="modal-footer py-2 justify-content-center flex-wrap gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="imageViewerZoomOut" title="Zoom out"><i class="fas fa-search-minus me-1"></i>Zoom out</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="imageViewerZoomReset" title="Reset zoom">Reset</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="imageViewerZoomIn" title="Zoom in"><i class="fas fa-search-plus me-1"></i>Zoom in</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
+    .product-card-image-wrapper.catalog-img-open {
+        cursor: pointer;
+        position: relative;
+    }
+    .catalog-img-hint {
+        position: absolute;
+        bottom: 6px;
+        right: 8px;
+        background: rgba(0,0,0,0.6);
+        color: #fff;
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .product-card-image-wrapper.catalog-img-open:hover .catalog-img-hint { opacity: 1; }
+    .image-viewer-body { min-height: 280px; max-height: 75vh; overflow: auto; }
+    .image-viewer-wrap {
+        display: inline-block;
+        overflow: hidden;
+        min-width: 100px;
+        min-height: 100px;
+    }
+    .image-viewer-img {
+        max-width: 100%;
+        height: auto;
+        transition: transform 0.15s ease;
+        transform-origin: center center;
+    }
     .product-card {
         border: none;
         overflow: hidden;
@@ -195,7 +249,8 @@
     }
 
     document.querySelectorAll('.btn-add-order').forEach(function(btn) {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
             var card = this.closest('.product-card');
             if (!card) return;
             addToCart(
@@ -207,6 +262,52 @@
             );
         });
     });
+
+    // Image viewer: open picture and zoom
+    var imageViewerModal = document.getElementById('imageViewerModal');
+    var imageViewerImg = document.getElementById('imageViewerImg');
+    var imageViewerLabel = document.getElementById('imageViewerModalLabel');
+    var imageViewerScale = 1;
+    var minScale = 0.25;
+    var maxScale = 4;
+    var scaleStep = 0.25;
+
+    function setImageViewerScale(s) {
+        imageViewerScale = Math.max(minScale, Math.min(maxScale, s));
+        if (imageViewerImg) imageViewerImg.style.transform = 'scale(' + imageViewerScale + ')';
+    }
+
+    document.querySelectorAll('.catalog-img-open').forEach(function(el) {
+        el.addEventListener('click', function() {
+            var src = this.getAttribute('data-img-src');
+            var alt = this.getAttribute('data-img-alt') || '';
+            if (!imageViewerImg || !src) return;
+            imageViewerImg.src = src;
+            imageViewerImg.alt = alt;
+            if (imageViewerLabel) imageViewerLabel.textContent = alt;
+            setImageViewerScale(1);
+            var modal = new bootstrap.Modal(imageViewerModal);
+            modal.show();
+        });
+        el.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+
+    if (imageViewerModal) {
+        document.getElementById('imageViewerZoomIn').addEventListener('click', function() { setImageViewerScale(imageViewerScale + scaleStep); });
+        document.getElementById('imageViewerZoomOut').addEventListener('click', function() { setImageViewerScale(imageViewerScale - scaleStep); });
+        document.getElementById('imageViewerZoomReset').addEventListener('click', function() { setImageViewerScale(1); });
+        imageViewerModal.addEventListener('wheel', function(e) {
+            if (!e.target.closest('.image-viewer-body')) return;
+            e.preventDefault();
+            var delta = e.deltaY > 0 ? -scaleStep : scaleStep;
+            setImageViewerScale(imageViewerScale + delta);
+        }, { passive: false });
+    }
 
     document.getElementById('btnPlaceOrder').addEventListener('click', function() {
         renderOrderTable();
