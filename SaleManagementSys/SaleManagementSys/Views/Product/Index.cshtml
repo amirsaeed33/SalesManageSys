@@ -60,6 +60,7 @@
                     <th>#</th>
                     <th>Name</th>
                     <th>Default Purchase Price</th>
+                    <th>Default Sale Price</th>
                     <th>Description</th>
                     <th class="text-center">Active</th>
                     <th class="text-center col-action">Action</th>
@@ -74,12 +75,14 @@
                         <tr data-id="@p.Id"
                             data-name="@p.Name"
                             data-price="@p.DefaultPurchasePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                            data-saleprice="@((p.DefaultSalePrice ?? p.DefaultPurchasePrice).ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"
                             data-imageurl="@(p.ImageUrl ?? "")"
                             data-description="@(p.Description ?? "")"
                             data-active="@(p.IsActive ? "true" : "false")">
                             <td>@i</td>
                             <td>@p.Name</td>
                             <td>@p.DefaultPurchasePrice.ToString("C", pkrCulture)</td>
+                            <td>@((p.DefaultSalePrice ?? p.DefaultPurchasePrice).ToString("C", pkrCulture))</td>
                             <td>@(p.Description ?? "—")</td>
                             <td class="text-center">
                                 @if (p.IsActive)
@@ -104,7 +107,7 @@
                 }
                 else
                 {
-                    <tr><td colspan="5" class="text-center text-muted">No products. Click "Add Product" to create one.</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted">No products. Click "Add Product" to create one.</td></tr>
                 }
             </tbody>
         </table>
@@ -145,6 +148,10 @@
                     <div class="mb-3">
                         <label for="productPrice" class="form-label">Default Purchase Price</label>
                         <input type="number" id="productPrice" name="DefaultPurchasePrice" class="form-control" step="0.01" min="0" value="0" placeholder="0.00" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="productSalePrice" class="form-label">Default Sale Price</label>
+                        <input type="number" id="productSalePrice" name="DefaultSalePrice" class="form-control" step="0.01" min="0" placeholder="Optional - defaults to purchase price" />
                     </div>
                     <div class="mb-3">
                         <label for="productDescription" class="form-label">Description</label>
@@ -215,6 +222,7 @@
                         document.getElementById('productId').value = '0';
                         document.getElementById('productName').value = '';
                         document.getElementById('productPrice').value = '0';
+                        document.getElementById('productSalePrice').value = '';
                         document.getElementById('productDescription').value = '';
                         isActiveEl.checked = true;
                         titleEl.textContent = 'Add Product';
@@ -224,6 +232,7 @@
                         document.getElementById('productId').value = row.dataset.id || '0';
                         document.getElementById('productName').value = row.dataset.name || '';
                         document.getElementById('productPrice').value = row.dataset.price || '0';
+                        document.getElementById('productSalePrice').value = row.dataset.saleprice || '';
                         document.getElementById('productDescription').value = row.dataset.description || '';
                         isActiveEl.checked = (row.dataset.active || 'true') === 'true';
                         titleEl.textContent = 'Edit Product';
@@ -251,6 +260,7 @@
             var reopenId = TempData["ProductId"]?.ToString() ?? "0";
             var reopenName = TempData["ProductName"]?.ToString() ?? "";
             var reopenPrice = TempData["ProductPrice"]?.ToString() ?? "0";
+            var reopenSalePrice = TempData["ProductDefaultSalePrice"]?.ToString() ?? "";
             var reopenImageUrl = TempData["ProductImageUrl"]?.ToString() ?? "";
             var reopenDesc = TempData["ProductDescription"]?.ToString() ?? "";
             var reopenActive = TempData["ProductIsActive"] as bool? ?? true;
@@ -263,6 +273,7 @@
                 row.dataset.id = @Html.Raw(JsonSerializer.Serialize(reopenId));
                 row.dataset.name = @Html.Raw(JsonSerializer.Serialize(reopenName));
                 row.dataset.price = @Html.Raw(JsonSerializer.Serialize(reopenPrice));
+                row.dataset.saleprice = @Html.Raw(JsonSerializer.Serialize(reopenSalePrice));
                 row.dataset.imageurl = @Html.Raw(JsonSerializer.Serialize(reopenImageUrl));
                 row.dataset.description = @Html.Raw(JsonSerializer.Serialize(reopenDesc));
                 row.dataset.active = @Html.Raw(JsonSerializer.Serialize(reopenActive));

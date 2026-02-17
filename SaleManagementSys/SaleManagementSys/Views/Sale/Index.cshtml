@@ -18,6 +18,13 @@
         </button>
     </div>
 
+    <div class="mb-3">
+        <div class="input-group" style="max-width: 400px;">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" id="saleSearchInput" class="form-control" placeholder="Search by customer, phone, amount, date..." />
+        </div>
+    </div>
+
     <div class="sales-table-container">
         <div class="table-responsive">
             <table class="table table-striped table-hover table-bordered">
@@ -38,7 +45,7 @@
                         var index = 1;
                         @foreach (var sale in Model)
                         {
-                            <tr>
+                            <tr data-search="@((sale?.CustomerName ?? "") + " " + (sale?.PhoneNumber ?? "") + " " + (sale?.TotalAmount.ToString("N2") ?? "") + " " + (sale?.SaleDate.ToString("MM/dd/yyyy") ?? ""))">
                                 <td>@index</td>
                                 <td>@(sale?.CustomerName ?? "N/A")</td>
                                 <td>@(sale?.PhoneNumber ?? "N/A")</td>
@@ -66,10 +73,16 @@
                             </tr>
                             index++;
                         }
+                        <tr id="saleNoResultsRow" class="d-none">
+                            <td colspan="7" class="text-center py-4">
+                                <i class="fas fa-search fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted mb-0">No matching sales found.</p>
+                            </td>
+                        </tr>
                     }
                     else
                     {
-                        <tr>
+                        <tr id="saleEmptyRow">
                             <td colspan="7" class="text-center py-4">
                                 <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
                                 <p class="text-muted">No sales records found.</p>
@@ -144,7 +157,8 @@
                 function productOptions() {
                     let html = '<option value="">-- Select Product --</option>';
                     products.forEach(p => {
-                        html += '<option value="' + p.Id + '" data-price="' + p.DefaultPurchasePrice + '">' + (p.Name || '') + '</option>';
+                        var salePrice = (p.DefaultSalePrice != null) ? p.DefaultSalePrice : p.DefaultPurchasePrice;
+                        html += '<option value="' + p.Id + '" data-price="' + p.DefaultPurchasePrice + '" data-sale-price="' + salePrice + '">' + (p.Name || '') + '</option>';
                     });
                     return html;
                 }
@@ -166,8 +180,11 @@
                     row.querySelector('.product-select').addEventListener('change', function() {
                         const opt = this.selectedOptions[0];
                         if (opt && opt.value) {
-                            const price = parseFloat(opt.getAttribute('data-price')) || 0;
-                            row.querySelector('.purchase-price').value = price.toFixed(2);
+                            const purchasePrice = parseFloat(opt.getAttribute('data-price')) || 0;
+                            const salePrice = parseFloat(opt.getAttribute('data-sale-price')) || purchasePrice;
+                            row.querySelector('.purchase-price').value = purchasePrice.toFixed(2);
+                            row.querySelector('.sale-price').value = salePrice.toFixed(2);
+                            calculateRowSubTotal(row);
                             calculateTotals();
                         }
                     });
@@ -282,6 +299,28 @@
 
             document.getElementById('btnOpenCreateSaleModal').addEventListener('click', openCreateModal);
             document.querySelectorAll('[data-open-create-modal]').forEach(btn => btn.addEventListener('click', openCreateModal));
+
+            // Sale search
+            var searchInput = document.getElementById('saleSearchInput');
+            var tableBody = document.getElementById('salesTableBody');
+            var noResultsRow = document.getElementById('saleNoResultsRow');
+            var emptyRow = document.getElementById('saleEmptyRow');
+            if (searchInput && tableBody) {
+                searchInput.addEventListener('input', function() {
+                    var term = (this.value || '').trim().toLowerCase();
+                    var dataRows = tableBody.querySelectorAll('tr[data-search]');
+                    var hasData = dataRows.length > 0;
+                    var matchCount = 0;
+                    dataRows.forEach(function(row) {
+                        var text = (row.getAttribute('data-search') || '').toLowerCase();
+                        var matches = !term || text.indexOf(term) >= 0;
+                        row.style.display = matches ? '' : 'none';
+                        if (matches) matchCount++;
+                    });
+                    if (noResultsRow) noResultsRow.classList.toggle('d-none', !hasData || matchCount > 0 || !term);
+                    if (emptyRow && hasData) emptyRow.classList.add('d-none');
+                });
+            }
         })();
     </script>
 }

@@ -10,7 +10,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invoice #@Model.Id - @orgName</title>
+    <title>Invoice</title>
     <link rel="stylesheet" href="@Url.Content("~/css/invoice.css")" asp-append-version="true" />
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,12 +47,12 @@
         .btn-back { background: #6c757d; color: #fff; padding: 10px 20px; font-size: 14px; text-decoration: none; display: inline-block; border-radius: 4px; margin-left: 10px; }
         .separator { border-top: 1px dashed #999; margin: 16px 0; }
         @@media print {
-            body { padding: 0; background: #fff; }
-            .invoice-container { max-width: 100%; padding: 0; }
+            body { padding: 0; background: #fff; margin: 0; }
+            .invoice-container { max-width: 100%; padding: 15mm; }
             .products-table tbody tr:hover { background: transparent !important; }
-            .print-actions, .btn-print, .btn-back { display: none !important; }
+            .print-actions, .btn-print, .btn-back, .print-tip { display: none !important; }
         }
-        @@page { size: A4; margin: 15mm; }
+        @@page { size: A4; margin: 0; }
     </style>
 </head>
 <body>
@@ -131,6 +131,11 @@
         <div class="invoice-notes">
             <strong>Notes</strong>
             <div style="margin-top:8px;color:#666;">Thank you for your business. Please retain this invoice for your records.</div>
+        </div>
+
+        <!-- Print tip - hide in print output -->
+        <div class="print-tip" style="margin-top:16px;padding:12px;background:#e7f3ff;border:1px solid #0d6efd;border-radius:4px;font-size:12px;color:#0c5460;">
+            <strong>For a clean PDF:</strong> In the print dialog, expand "More settings" and uncheck "Headers and footers" to remove the URL, title, and date from the top and bottom.
         </div>
 
         <!-- Print Actions (Hidden during print) -->

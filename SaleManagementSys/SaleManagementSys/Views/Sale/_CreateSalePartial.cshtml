@@ -60,4 +60,4 @@
         </button>
     </div>
 </form>
-<script type="application/json" id="createSaleProductsData">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(products.Select(p => new { p.Id, p.Name, p.DefaultPurchasePrice })))</script>
+<script type="application/json" id="createSaleProductsData">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(products.Select(p => new { p.Id, p.Name, p.DefaultPurchasePrice, DefaultSalePrice = p.DefaultSalePrice ?? p.DefaultPurchasePrice })))</script>

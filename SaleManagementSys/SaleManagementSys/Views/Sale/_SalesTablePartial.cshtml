@@ -8,7 +8,7 @@
 {
     @foreach (var sale in Model)
     {
-        <tr>
+        <tr data-search="@((sale?.CustomerName ?? "") + " " + (sale?.PhoneNumber ?? "") + " " + (sale?.TotalAmount.ToString("N2") ?? "") + " " + (sale?.SaleDate.ToString("MM/dd/yyyy") ?? ""))">
             <td>@(index++)</td>
             <td>@(sale?.CustomerName ?? "N/A")</td>
             <td>@(sale?.PhoneNumber ?? "N/A")</td>
@@ -35,10 +35,16 @@
             </td>
         </tr>
     }
+    <tr id="saleNoResultsRow" class="d-none">
+        <td colspan="7" class="text-center py-4">
+            <i class="fas fa-search fa-3x text-muted mb-3 d-block"></i>
+            <p class="text-muted mb-0">No matching sales found.</p>
+        </td>
+    </tr>
 }
 else
 {
-    <tr>
+    <tr id="saleEmptyRow">
         <td colspan="7" class="text-center py-4">
             <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
             <p class="text-muted mb-0">No sales records found.</p>

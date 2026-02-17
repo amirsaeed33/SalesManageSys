@@ -18,6 +18,11 @@ namespace SaleManagementSys.Models
         [Range(0, double.MaxValue, ErrorMessage = "Purchase price must be >= 0")]
         public decimal DefaultPurchasePrice { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        [Display(Name = "Default Sale Price")]
+        [Range(0, double.MaxValue, ErrorMessage = "Sale price must be >= 0")]
+        public decimal? DefaultSalePrice { get; set; }
+
         [StringLength(1000)]
         public string? Description { get; set; }
 

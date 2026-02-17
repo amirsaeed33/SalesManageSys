@@ -54,6 +54,7 @@ namespace SaleManagementSys.Controllers
                 TempData["ProductId"] = product.Id;
                 TempData["ProductName"] = product.Name;
                 TempData["ProductPrice"] = product.DefaultPurchasePrice;
+                TempData["ProductDefaultSalePrice"] = product.DefaultSalePrice;
                 TempData["ProductImageUrl"] = product.ImageUrl ?? "";
                 TempData["ProductDescription"] = product.Description ?? "";
                 TempData["ProductIsActive"] = product.IsActive;

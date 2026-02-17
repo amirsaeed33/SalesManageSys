@@ -44,6 +44,7 @@ namespace SaleManagementSys.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.DefaultPurchasePrice).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.DefaultSalePrice).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.Description).HasMaxLength(1000);
                 entity.Property(e => e.ImageUrl).HasMaxLength(500);
                 entity.Property(e => e.IsActive).HasDefaultValue(true);
