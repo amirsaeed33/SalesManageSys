@@ -3,6 +3,9 @@
     var canvas = document.getElementById('spiderCanvas');
     if (!canvas) return;
 
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.pointerEvents = 'none';
+
     var ctx = canvas.getContext('2d');
     var mouse = { x: 0, y: 0 };
     var legs = [];
