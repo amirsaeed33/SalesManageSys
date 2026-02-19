@@ -25,6 +25,8 @@
             {
                 var salePrice = product.DefaultSalePrice ?? product.DefaultPurchasePrice;
                 <div class="col-md-4 col-sm-6 col-lg-3">
+                    <div class="product-card-gradient-wrap">
+                    <canvas class="product-card-gl-canvas" aria-hidden="true"></canvas>
                     <div class="card product-card h-100 shadow-sm" data-product-id="@product.Id" data-product-name="@product.Name" data-sale-price="@salePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" data-purchase-price="@product.DefaultPurchasePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
                         <div class="product-card-image-wrapper catalog-img-open" role="button" tabindex="0" title="Click to open / zoom picture" data-img-src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "https://placehold.co/400x300/e9ecef/6c757d?text=" + Uri.EscapeDataString(product.Name) : product.ImageUrl)" data-img-alt="@product.Name">
                             @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
@@ -44,6 +46,7 @@
                                 <i class="fas fa-plus me-1"></i>Add to Order
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             }
@@ -114,10 +117,9 @@
                 <h5 class="modal-title" id="imageViewerModalLabel"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-2 image-viewer-body">
-                <div class="image-viewer-wrap">
-                    <img id="imageViewerImg" src="" alt="" class="image-viewer-img" />
-                </div>
+            <div class="modal-body p-2 image-viewer-body" id="imageViewerBody">
+                <canvas id="imageViewerCanvas" class="image-viewer-gl-canvas"></canvas>
+                <img id="imageViewerImg" src="" alt="" class="d-none" />
             </div>
             <div class="modal-footer py-2 justify-content-center flex-wrap gap-2">
                 <button type="button" class="btn btn-outline-secondary btn-sm" id="imageViewerZoomOut" title="Zoom out"><i class="fas fa-search-minus me-1"></i>Zoom out</button>
@@ -151,31 +153,46 @@
         min-height: 280px;
         height: 70vh;
         max-height: calc(100vh - 180px);
-        overflow: auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        overflow: hidden;
+        display: block;
         background: #1a1a1a;
+        position: relative;
     }
-    .image-viewer-wrap {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 100%;
-        min-height: 100%;
+    .image-viewer-gl-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
     }
-    .image-viewer-img {
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
-        object-fit: contain;
-        transition: width 0.15s ease, height 0.15s ease;
+    .product-card-gradient-wrap {
+        position: relative;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        padding: 3px;
+    }
+    .product-card-gradient-wrap .product-card-gl-canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        z-index: 0;
+        border-radius: 0.5rem;
+    }
+    .product-card-gradient-wrap .product-card {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        border-radius: calc(0.5rem - 3px);
     }
     .product-card {
         border: none;
         overflow: hidden;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background: #fff;
     }
     .product-card:hover {
         transform: translateY(-4px);
@@ -303,45 +320,142 @@
         });
     });
 
-    // Image viewer: open picture and zoom
+    // Image viewer: WebGL zoom
     var imageViewerModal = document.getElementById('imageViewerModal');
     var imageViewerImg = document.getElementById('imageViewerImg');
     var imageViewerLabel = document.getElementById('imageViewerModalLabel');
-    var imageViewerBody = document.querySelector('.image-viewer-body');
+    var imageViewerBody = document.getElementById('imageViewerBody');
+    var imageViewerCanvas = document.getElementById('imageViewerCanvas');
     var imageViewerZoom = 1;
-    var imageViewerBaseW = 0;
-    var imageViewerBaseH = 0;
+    var imageViewerPanX = 0;
+    var imageViewerPanY = 0;
     var minZoom = 0.25;
     var maxZoom = 4;
     var zoomStep = 0.25;
+    var imageViewerGL = null;
+    var imageViewerRaf = null;
 
-    function applyImageViewerZoom() {
-        if (!imageViewerImg || !imageViewerBaseW || !imageViewerBaseH) return;
-        var w = Math.round(imageViewerBaseW * imageViewerZoom);
-        var h = Math.round(imageViewerBaseH * imageViewerZoom);
-        imageViewerImg.style.width = w + 'px';
-        imageViewerImg.style.height = h + 'px';
-        imageViewerImg.style.maxWidth = 'none';
-        imageViewerImg.style.maxHeight = 'none';
+    var imageViewerVS = [
+        'attribute vec2 a_position;',
+        'attribute vec2 a_uv;',
+        'varying vec2 v_uv;',
+        'void main() { v_uv = a_uv; gl_Position = vec4(a_position, 0.0, 1.0); }'
+    ].join('\n');
+    var imageViewerFS = [
+        'precision mediump float;',
+        'varying vec2 v_uv;',
+        'uniform sampler2D u_tex;',
+        'uniform vec2 u_fitMin;',
+        'uniform vec2 u_fitMax;',
+        'uniform float u_zoom;',
+        'uniform vec2 u_pan;',
+        'void main() {',
+        '  vec2 uv = (v_uv - 0.5) / u_zoom + 0.5 + u_pan;',
+        '  if (uv.x < u_fitMin.x || uv.x > u_fitMax.x || uv.y < u_fitMin.y || uv.y > u_fitMax.y) {',
+        '    gl_FragColor = vec4(0.13, 0.13, 0.13, 1.0); return;',
+        '  }',
+        '  vec2 texCoord = (uv - u_fitMin) / (u_fitMax - u_fitMin);',
+        '  gl_FragColor = texture2D(u_tex, texCoord);',
+        '}'
+    ].join('\n');
+
+    function createImageViewerGL() {
+        if (!imageViewerCanvas || !imageViewerBody) return null;
+        var gl = imageViewerCanvas.getContext('webgl') || imageViewerCanvas.getContext('experimental-webgl');
+        if (!gl) return null;
+        function compileShader(type, src) {
+            var s = gl.createShader(type);
+            gl.shaderSource(s, src);
+            gl.compileShader(s);
+            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { gl.deleteShader(s); return null; }
+            return s;
+        }
+        var vs = compileShader(gl.VERTEX_SHADER, imageViewerVS);
+        var fs = compileShader(gl.FRAGMENT_SHADER, imageViewerFS);
+        if (!vs || !fs) return null;
+        var prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+        var buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -1,-1,0,1, 1,-1,1,1, -1,1,0,0, 1,1,1,0
+        ]), gl.STATIC_DRAW);
+        return { gl: gl, program: prog, buffer: buf };
+    }
+
+    function getFitRect(imgW, imgH, canvasW, canvasH) {
+        var imgAspect = imgW / imgH;
+        var viewAspect = canvasW / canvasH;
+        var fitMin = [0, 0];
+        var fitMax = [1, 1];
+        if (imgAspect > viewAspect) {
+            var h = viewAspect / imgAspect;
+            fitMin[1] = (1 - h) / 2;
+            fitMax[1] = (1 + h) / 2;
+        } else {
+            var w = imgAspect / viewAspect;
+            fitMin[0] = (1 - w) / 2;
+            fitMax[0] = (1 + w) / 2;
+        }
+        return { fitMin: fitMin, fitMax: fitMax };
+    }
+
+    function imageViewerDraw() {
+        if (!imageViewerGL || !imageViewerCanvas.isConnected) return;
+        var gl = imageViewerGL.gl;
+        var w = imageViewerBody.clientWidth;
+        var h = imageViewerBody.clientHeight;
+        if (w <= 0 || h <= 0) { imageViewerRaf = requestAnimationFrame(imageViewerDraw); return; }
+        if (imageViewerCanvas.width !== w || imageViewerCanvas.height !== h) {
+            imageViewerCanvas.width = w;
+            imageViewerCanvas.height = h;
+            gl.viewport(0, 0, w, h);
+        }
+        var tex = imageViewerGL.texture;
+        var fit = imageViewerGL.fit;
+        if (!tex || !fit) { imageViewerRaf = requestAnimationFrame(imageViewerDraw); return; }
+        gl.useProgram(imageViewerGL.program);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.uniform1i(gl.getUniformLocation(imageViewerGL.program, 'u_tex'), 0);
+        gl.uniform2f(gl.getUniformLocation(imageViewerGL.program, 'u_fitMin'), fit.fitMin[0], fit.fitMin[1]);
+        gl.uniform2f(gl.getUniformLocation(imageViewerGL.program, 'u_fitMax'), fit.fitMax[0], fit.fitMax[1]);
+        gl.uniform1f(gl.getUniformLocation(imageViewerGL.program, 'u_zoom'), imageViewerZoom);
+        gl.uniform2f(gl.getUniformLocation(imageViewerGL.program, 'u_pan'), imageViewerPanX, imageViewerPanY);
+        gl.bindBuffer(gl.ARRAY_BUFFER, imageViewerGL.buffer);
+        var posLoc = gl.getAttribLocation(imageViewerGL.program, 'a_position');
+        var uvLoc = gl.getAttribLocation(imageViewerGL.program, 'a_uv');
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 16, 0);
+        gl.enableVertexAttribArray(uvLoc);
+        gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 16, 8);
+        gl.clearColor(0.13, 0.13, 0.13, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        imageViewerRaf = requestAnimationFrame(imageViewerDraw);
     }
 
     function setImageViewerZoom(z) {
         imageViewerZoom = Math.max(minZoom, Math.min(maxZoom, z));
-        applyImageViewerZoom();
     }
 
-    function fitImageToViewer() {
-        if (!imageViewerImg || !imageViewerBody) return;
-        var nw = imageViewerImg.naturalWidth;
-        var nh = imageViewerImg.naturalHeight;
-        if (!nw || !nh) return;
-        var cw = imageViewerBody.clientWidth;
-        var ch = imageViewerBody.clientHeight;
-        var fit = Math.min(cw / nw, ch / nh, 1);
-        imageViewerBaseW = nw * fit;
-        imageViewerBaseH = nh * fit;
-        imageViewerZoom = 1;
-        applyImageViewerZoom();
+    function imageViewerLoadTexture(img) {
+        if (!imageViewerGL) return;
+        var gl = imageViewerGL.gl;
+        var tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+        var cw = imageViewerBody.clientWidth || imageViewerCanvas.width || 800;
+        var ch = imageViewerBody.clientHeight || imageViewerCanvas.height || 600;
+        imageViewerGL.texture = tex;
+        imageViewerGL.fit = getFitRect(img.naturalWidth, img.naturalHeight, cw, ch);
     }
 
     document.querySelectorAll('.catalog-img-open').forEach(function(el) {
@@ -349,40 +463,50 @@
             var src = this.getAttribute('data-img-src');
             var alt = this.getAttribute('data-img-alt') || '';
             if (!imageViewerImg || !src) return;
-            imageViewerImg.style.maxWidth = '';
-            imageViewerImg.style.maxHeight = '';
-            imageViewerImg.style.width = '';
-            imageViewerImg.style.height = '';
-            imageViewerImg.src = src;
-            imageViewerImg.alt = alt;
-            if (imageViewerLabel) imageViewerLabel.textContent = alt;
+            if (imageViewerRaf) cancelAnimationFrame(imageViewerRaf);
+            imageViewerRaf = null;
             imageViewerZoom = 1;
-            imageViewerBaseW = 0;
-            imageViewerBaseH = 0;
+            imageViewerPanX = 0;
+            imageViewerPanY = 0;
+            if (imageViewerLabel) imageViewerLabel.textContent = alt;
+            if (!imageViewerGL) imageViewerGL = createImageViewerGL();
+            if (!imageViewerGL) {
+                imageViewerImg.classList.remove('d-none');
+                imageViewerImg.src = src;
+                imageViewerImg.alt = alt;
+                var modal = new bootstrap.Modal(imageViewerModal);
+                modal.show();
+                return;
+            }
+            imageViewerImg.alt = alt;
+            imageViewerImg.onload = function() {
+                imageViewerLoadTexture(imageViewerImg);
+                imageViewerRaf = requestAnimationFrame(imageViewerDraw);
+            };
+            imageViewerImg.src = src;
             var modal = new bootstrap.Modal(imageViewerModal);
             modal.show();
         });
         el.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.click();
-            }
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
         });
     });
 
-    if (imageViewerImg) {
-        imageViewerImg.addEventListener('load', function() {
-            fitImageToViewer();
-        });
-    }
-
     if (imageViewerModal) {
+        imageViewerModal.addEventListener('hidden.bs.modal', function() {
+            if (imageViewerRaf) cancelAnimationFrame(imageViewerRaf);
+            imageViewerRaf = null;
+        });
         imageViewerModal.addEventListener('shown.bs.modal', function() {
-            if (imageViewerImg.complete && imageViewerImg.naturalWidth) fitImageToViewer();
+            if (imageViewerGL && imageViewerGL.texture && imageViewerImg.complete && imageViewerImg.naturalWidth) {
+                var cw = imageViewerBody.clientWidth;
+                var ch = imageViewerBody.clientHeight;
+                imageViewerGL.fit = getFitRect(imageViewerImg.naturalWidth, imageViewerImg.naturalHeight, cw, ch);
+            }
         });
         document.getElementById('imageViewerZoomIn').addEventListener('click', function() { setImageViewerZoom(imageViewerZoom + zoomStep); });
         document.getElementById('imageViewerZoomOut').addEventListener('click', function() { setImageViewerZoom(imageViewerZoom - zoomStep); });
-        document.getElementById('imageViewerZoomReset').addEventListener('click', function() { setImageViewerZoom(1); });
+        document.getElementById('imageViewerZoomReset').addEventListener('click', function() { imageViewerZoom = 1; imageViewerPanX = 0; imageViewerPanY = 0; });
         imageViewerModal.addEventListener('wheel', function(e) {
             if (!e.target.closest('.image-viewer-body')) return;
             e.preventDefault();
@@ -475,6 +599,113 @@
     });
 
     updateCartUI();
+})();
+
+// WebGL animated gradient border for product cards
+(function() {
+    var BORDER_PX = 3;
+    var vertexSource = [
+        'attribute vec2 a_position;',
+        'void main() { gl_Position = vec4(a_position, 0.0, 1.0); }'
+    ].join('\n');
+    var fragmentSource = [
+        'precision mediump float;',
+        'uniform vec2 u_resolution;',
+        'uniform float u_time;',
+        'uniform float u_border;',
+        'void main() {',
+        '  vec2 uv = gl_FragCoord.xy;',
+        '  float bx = u_border; float by = u_border;',
+        '  if (uv.x > bx && uv.x < u_resolution.x - bx && uv.y > by && uv.y < u_resolution.y - by) {',
+        '    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0); return;',
+        '  }',
+        '  vec2 c = u_resolution * 0.5;',
+        '  float angle = atan(uv.y - c.y, uv.x - c.x) + u_time;',
+        '  float t = mod(angle / 6.28318530718 + 0.5, 1.0);',
+        '  vec3 c0 = vec3(0.05, 0.43, 0.99);',
+        '  vec3 c1 = vec3(0.1, 0.53, 0.33);',
+        '  vec3 c2 = vec3(1.0, 0.76, 0.03);',
+        '  vec3 c3 = vec3(0.99, 0.49, 0.08);',
+        '  vec3 c4 = vec3(0.86, 0.21, 0.27);',
+        '  vec3 col;',
+        '  if (t < 0.2) col = mix(c0, c1, t / 0.2);',
+        '  else if (t < 0.4) col = mix(c1, c2, (t - 0.2) / 0.2);',
+        '  else if (t < 0.6) col = mix(c2, c3, (t - 0.4) / 0.2);',
+        '  else if (t < 0.8) col = mix(c3, c4, (t - 0.6) / 0.2);',
+        '  else col = mix(c4, c0, (t - 0.8) / 0.2);',
+        '  gl_FragColor = vec4(col, 1.0);',
+        '}'
+    ].join('\n');
+
+    function createShader(gl, type, source) {
+        var shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.warn(gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
+    }
+
+    function initCardGL(canvas) {
+        var wrap = canvas.closest('.product-card-gradient-wrap');
+        if (!wrap) return;
+        var w = wrap.clientWidth;
+        var h = wrap.clientHeight;
+        if (w <= 0 || h <= 0) return;
+        canvas.width = w;
+        canvas.height = h;
+        var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return;
+        var vs = createShader(gl, gl.VERTEX_SHADER, vertexSource);
+        var fs = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+        if (!vs || !fs) return;
+        var program = gl.createProgram();
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+        var posLoc = gl.getAttribLocation(program, 'a_position');
+        var resLoc = gl.getUniformLocation(program, 'u_resolution');
+        var timeLoc = gl.getUniformLocation(program, 'u_time');
+        var borderLoc = gl.getUniformLocation(program, 'u_border');
+        var buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+        var start = performance.now() / 1000;
+        function draw() {
+            if (!canvas.isConnected) return;
+            var nw = wrap.clientWidth;
+            var nh = wrap.clientHeight;
+            if (nw !== canvas.width || nh !== canvas.height) {
+                canvas.width = nw;
+                canvas.height = nh;
+                gl.viewport(0, 0, nw, nh);
+            }
+            gl.useProgram(program);
+            gl.enableVertexAttribArray(posLoc);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+            gl.uniform2f(resLoc, canvas.width, canvas.height);
+            gl.uniform1f(timeLoc, (performance.now() / 1000 - start));
+            gl.uniform1f(borderLoc, BORDER_PX);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            requestAnimationFrame(draw);
+        }
+        gl.viewport(0, 0, w, h);
+        requestAnimationFrame(draw);
+    }
+
+    function initAllCards() {
+        document.querySelectorAll('.product-card-gl-canvas').forEach(initCardGL);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(initAllCards, 50); });
+    } else {
+        setTimeout(initAllCards, 50);
+    }
 })();
 </script>
 }
