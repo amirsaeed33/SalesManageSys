@@ -18,20 +18,9 @@ html {
 }
 
 body {
-  padding-bottom: 60px;
+  margin-bottom: 60px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f8f9fa;
-}
-
-/* Footer fixed at bottom (like navbar at top) - separate from content */
-.footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1030;
-  background-color: #fff;
 }
 
 /* Global Rounded Corners for Cards */
