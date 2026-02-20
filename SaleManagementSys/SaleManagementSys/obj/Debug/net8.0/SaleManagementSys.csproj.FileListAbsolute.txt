@@ -293,3 +293,6 @@ E:\Github\SalesManageSys\SaleManagementSys\SaleManagementSys\bin\Debug\net8.0\pu
 E:\Github\SalesManageSys\SaleManagementSys\SaleManagementSys\bin\Debug\net8.0\publish\publish\publish\publish\publish\publish\publish\SaleManagementSys.runtimeconfig.json
 E:\Github\SalesManageSys\SaleManagementSys\SaleManagementSys\bin\Debug\net8.0\publish\publish\publish\publish\publish\publish\SaleManagementSys.deps.json
 E:\Github\SalesManageSys\SaleManagementSys\SaleManagementSys\bin\Debug\net8.0\publish\publish\publish\publish\publish\publish\SaleManagementSys.runtimeconfig.json
+D:\GitHub\SalesSystem\SalesManagementSys\SaleManagementSys\SaleManagementSys\bin\Debug\net8.0\appsettings.Production.json
+D:\GitHub\SalesSystem\SalesManagementSys\SaleManagementSys\SaleManagementSys\bin\Debug\net8.0\BCrypt.Net-Next.dll
+D:\GitHub\SalesSystem\SalesManagementSys\SaleManagementSys\SaleManagementSys\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

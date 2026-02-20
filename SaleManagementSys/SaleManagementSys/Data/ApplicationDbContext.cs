@@ -16,6 +16,7 @@ namespace SaleManagementSys.Data
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
+        public DbSet<Login> Logins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -120,6 +121,17 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.LogoUrl).HasMaxLength(500);
                 entity.Property(e => e.PhoneNumber).HasMaxLength(20);
                 entity.Property(e => e.Address).HasMaxLength(500);
+            });
+
+            // Configure Login entity (auth - Logins table)
+            modelBuilder.Entity<Login>(entity =>
+            {
+                entity.ToTable("Logins");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(150);
+                entity.Property(e => e.PasswordHash).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
             });
         }
     }
