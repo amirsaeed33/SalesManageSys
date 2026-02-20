@@ -9,6 +9,27 @@
 
   if (!container) return;
 
+  // Password show/hide toggle
+  function initPasswordToggles() {
+    var toggles = container.querySelectorAll('.auth-password-toggle');
+    toggles.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var targetId = btn.getAttribute('data-target');
+        var input = targetId ? document.getElementById(targetId) : null;
+        if (!input) return;
+        var showIcon = btn.querySelector('.auth-password-toggle-show');
+        var hideIcon = btn.querySelector('.auth-password-toggle-hide');
+        var isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        if (showIcon) showIcon.style.display = isPassword ? 'none' : 'inline-block';
+        if (hideIcon) hideIcon.style.display = isPassword ? 'inline-block' : 'none';
+        btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        btn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+      });
+    });
+  }
+  initPasswordToggles();
+
   function showError(el, msg) {
     if (!el) return;
     el.textContent = msg || 'Something went wrong.';
