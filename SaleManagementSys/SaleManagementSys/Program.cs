@@ -78,6 +78,10 @@ app.UseAuthorization();
 
 app.MapControllers(); // Auth API: /auth/register, /auth/login
 app.MapControllerRoute(
+    name: "dashboard",
+    pattern: "Dashboard",
+    defaults: new { controller = "Dashboard", action = "Index" });
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Login}/{id?}");
 

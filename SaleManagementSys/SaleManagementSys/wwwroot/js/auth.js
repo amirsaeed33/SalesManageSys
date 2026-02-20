@@ -64,7 +64,7 @@
           if (result.ok && d && (d.success === true || d.Success === true)) {
             if (d.token) localStorage.setItem('authToken', d.token);
             else if (d.Token) localStorage.setItem('authToken', d.Token);
-            window.location.href = '/Dashboard';
+            window.location.href = '/Dashboard/Index';
             return;
           }
           showError(registerError, (d && (d.message || d.Message)) || 'Registration failed.');
@@ -101,7 +101,7 @@
           if (result.ok && d && (d.success === true || d.Success === true)) {
             if (d.token) localStorage.setItem('authToken', d.token);
             else if (d.Token) localStorage.setItem('authToken', d.Token);
-            window.location.href = '/Dashboard';
+            window.location.href = '/Dashboard/Index';
             return;
           }
           showError(loginError, (d && (d.message || d.Message)) || 'Invalid username or password.');
