@@ -64,6 +64,8 @@
           if (result.ok && d && (d.success === true || d.Success === true)) {
             if (d.token) localStorage.setItem('authToken', d.token);
             else if (d.Token) localStorage.setItem('authToken', d.Token);
+            if (d.username) localStorage.setItem('authUsername', d.username);
+            else if (d.Username) localStorage.setItem('authUsername', d.Username);
             window.location.href = '/Dashboard/Index';
             return;
           }
@@ -101,6 +103,8 @@
           if (result.ok && d && (d.success === true || d.Success === true)) {
             if (d.token) localStorage.setItem('authToken', d.token);
             else if (d.Token) localStorage.setItem('authToken', d.Token);
+            if (d.username != null) localStorage.setItem('authUsername', d.username);
+            else if (d.Username != null) localStorage.setItem('authUsername', d.Username);
             window.location.href = '/Dashboard/Index';
             return;
           }
