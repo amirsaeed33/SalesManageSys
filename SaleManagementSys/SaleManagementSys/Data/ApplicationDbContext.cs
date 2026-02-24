@@ -128,6 +128,8 @@ namespace SaleManagementSys.Data
             {
                 entity.ToTable("Logins");
                 entity.HasKey(e => e.Id);
+                entity.Property(e => e.FirstName).HasMaxLength(100);
+                entity.Property(e => e.LastName).HasMaxLength(100);
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(150);
                 entity.Property(e => e.PasswordHash).IsRequired();

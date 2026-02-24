@@ -61,10 +61,12 @@
     registerForm.addEventListener('submit', function (e) {
       e.preventDefault();
       hideError(registerError);
+      var firstName = document.getElementById('regFirstName').value.trim();
+      var lastName = document.getElementById('regLastName').value.trim();
       var username = document.getElementById('regUsername').value.trim();
       var email = document.getElementById('regEmail').value.trim();
       var password = document.getElementById('regPassword').value;
-      if (!username || !email || !password) {
+      if (!firstName || !lastName || !username || !email || !password) {
         showError(registerError, 'Please fill all fields.');
         return;
       }
@@ -77,7 +79,7 @@
       fetch('/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, email: email, password: password })
+        body: JSON.stringify({ firstName: firstName, lastName: lastName, username: username, email: email, password: password })
       })
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {

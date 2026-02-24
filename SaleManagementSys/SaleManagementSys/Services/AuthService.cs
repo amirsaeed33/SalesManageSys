@@ -29,6 +29,8 @@ namespace SaleManagementSys.Services
 
             var login = new Login
             {
+                FirstName = request.FirstName?.Trim() ?? string.Empty,
+                LastName = request.LastName?.Trim() ?? string.Empty,
                 Username = request.Username.Trim(),
                 Email = request.Email.Trim(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
