@@ -1,5 +1,13 @@
-/* Sale page styles */
+/* Sale page styles - Spider theme (tables/buttons inherit from site.css) */
+.sales-table-container .action-buttons .btn {
+  margin-right: 0.25rem;
+}
 
-.sales-table-container .action-buttons .btn { margin-right: 0.25rem; }
-.form-section .section-title { margin-bottom: 0.75rem; }
-.col-action-sm { width: 80px; }
+.form-section .section-title {
+  margin-bottom: 0.75rem;
+  color: var(--text, #F5F5F5);
+}
+
+.col-action-sm {
+  width: 80px;
+}

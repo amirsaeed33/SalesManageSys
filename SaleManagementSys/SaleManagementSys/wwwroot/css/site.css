@@ -1,5 +1,24 @@
+/* ========== Spider Dark Theme - CSS Variables ========== */
+:root {
+  --primary: #FF3C00;
+  --primary-light: #FF6A00;
+  --bg: #0F0F14;
+  --card-bg: #1C1C24;
+  --text: #F5F5F5;
+  --text-muted: #A0A0A0;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --radius: 12px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.2);
+  --btn-glow: 0 0 20px rgba(255, 60, 0, 0.4);
+  --transition: 0.25s ease;
+}
+
 html {
   font-size: 14px;
+  position: relative;
+  min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -8,22 +27,22 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
   padding-bottom: 60px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color var(--transition), color var(--transition);
 }
 
-/* Footer fixed at bottom (like navbar at top) - separate from content */
+/* Focus - subtle primary glow */
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus,
+.form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 60, 0, 0.35);
+  border-color: var(--primary);
+}
+
+/* ========== Footer ========== */
 .footer {
   position: fixed;
   bottom: 0;
@@ -31,29 +50,178 @@ body {
   right: 0;
   width: 100%;
   z-index: 1030;
-  background-color: #fff;
+  background-color: var(--card-bg);
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-color);
 }
 
-/* Global Rounded Corners for Cards */
+.footer a {
+  color: var(--primary);
+  transition: color var(--transition);
+}
+
+.footer a:hover {
+  color: var(--primary-light);
+}
+
+/* ========== Cards ========== */
 .card {
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow var(--transition), transform var(--transition);
 }
 
-/* Global Button Rounded Corners */
+.card-body {
+  color: var(--text);
+}
+
+/* ========== Clear content over spider cursor (dashboard-style) ========== */
+.sales-table-container {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.sales-table-container .table thead th {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.sales-table-container .table tbody tr:hover {
+  background-color: rgba(255, 60, 0, 0.06);
+}
+
+/* Products, Orders - table sections same clear look (exclude modal & sales-table-container) */
+main .container-fluid .table-responsive,
+main .container .table-responsive {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: 1.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+main .sales-table-container .table-responsive {
+  padding: 0;
+  margin-top: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* Form cards (Organization etc) - ensure solid over spider */
+main .card.shadow-sm,
+main form.card {
+  box-shadow: var(--shadow-soft);
+}
+
+/* Catalog/Store empty state - clear card */
+.container-fluid > .text-center.py-5 {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ========== Buttons ========== */
 .btn {
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border: none;
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  box-shadow: var(--btn-glow);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #0d9488, #10b981);
+  border: none;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #0369a1, #0ea5e9);
+  border: none;
+  color: #fff;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #b45309, #f59e0b);
+  border: none;
+  color: #fff;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+  border: none;
 }
 
 .btn-sm {
-  border-radius: 0.375rem;
+  border-radius: 8px;
 }
 
+/* ========== Layout columns ========== */
 .col-action {
   width: 120px;
 }
 
 .col-action-sm {
   width: 100px;
+}
+
+/* ========== Navbar ========== */
+.navbar {
+  background-color: var(--card-bg) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-soft);
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar .nav-link.text-dark {
+  color: var(--text) !important;
+  transition: color var(--transition), background-color var(--transition);
+}
+
+.navbar .nav-link:hover {
+  color: var(--primary) !important;
+  background-color: rgba(255, 60, 0, 0.1);
+}
+
+.navbar .navbar-toggler {
+  border-color: var(--border-color);
+  background: transparent;
+}
+
+.navbar .navbar-toggler-icon {
+  filter: invert(1);
+  opacity: 0.9;
 }
 
 /* Organization logo/initials circle in navbar */
@@ -65,7 +233,7 @@ body {
   height: 40px;
   border-radius: 50%;
   overflow: hidden;
-  background: #0d6efd;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: #fff;
   font-weight: 700;
   font-size: 14px;
@@ -82,20 +250,300 @@ body {
   line-height: 1;
 }
 
-/* Nav link hover effect */
 .navbar-nav .nav-link {
   transition: color 0.2s ease, background-color 0.2s ease;
   border-radius: 0.6rem;
   padding: 0.5rem 0.75rem !important;
 }
 
-.navbar-nav .nav-link:hover {
-  color: #0d6efd !important;
-  background-color: rgba(13, 110, 253, 0.1);
-}
-
-/* First letter underlined accent */
 .navbar-nav .nav-link::first-letter {
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+/* ========== Forms ========== */
+.form-control,
+.form-select {
+  background-color: var(--bg);
+  border: 1px solid var(--border-color);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.form-control:hover,
+.form-select:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.input-group-text {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+}
+
+.label,
+label {
+  color: var(--text);
+}
+
+/* ========== Tables ========== */
+.table {
+  color: var(--text);
+  --bs-table-striped-color: var(--text);
+  --bs-table-hover-color: var(--text);
+  --bs-table-active-color: var(--text);
+}
+
+.table thead th {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.table tbody td {
+  border-color: var(--border-color);
+  color: var(--text);
+}
+
+/* Ensure table data visible on Products/Orders (no clipping) */
+main .container-fluid .table-responsive .table tbody td,
+main .container .table-responsive .table tbody td {
+  color: var(--text) !important;
+  overflow: visible;
+  white-space: normal;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.02);
+  color: var(--text);
+}
+
+/* Override Bootstrap's dark text on striped rows (was #212529 - invisible on dark theme) */
+.table-striped > tbody > tr:nth-of-type(odd) td {
+  color: var(--text) !important;
+}
+
+.table-hover > tbody > tr:hover {
+  background-color: rgba(255, 60, 0, 0.06);
+}
+
+.table-bordered {
+  border-color: var(--border-color);
+}
+
+.table-bordered th,
+.table-bordered td {
+  border-color: var(--border-color);
+}
+
+/* Semantic table text (keep readable on dark) */
+.text-success { color: #34d399 !important; }
+.text-primary { color: #93c5fd !important; }
+.text-danger { color: #f87171 !important; }
+.text-warning { color: #fbbf24 !important; }
+.text-muted { color: var(--text-muted) !important; }
+
+/* ========== Modals ========== */
+.modal-content {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-title {
+  color: var(--text);
+}
+
+.modal-body {
+  color: var(--text);
+}
+
+.btn-close {
+  filter: invert(1);
+  opacity: 0.8;
+}
+
+/* ========== Alerts ========== */
+.alert {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.alert-warning {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--text);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.alert-success {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--text);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.alert-danger {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: var(--text);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.alert-info {
+  background-color: rgba(14, 165, 233, 0.15);
+  color: var(--text);
+  border-color: rgba(14, 165, 233, 0.4);
+}
+
+/* ========== Links ========== */
+a {
+  color: var(--primary);
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--primary-light);
+}
+
+/* ========== Headings ========== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text);
+}
+
+.display-4 {
+  color: var(--text);
+}
+
+/* ========== Product / Organization image circles (theme overrides) ========== */
+.product-image-circle,
+.org-logo-circle {
+  background: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.product-image-circle-wrapper:hover .product-image-circle,
+.org-logo-wrapper:hover .org-logo-circle {
+  border-color: var(--primary) !important;
+  background: rgba(255, 60, 0, 0.08) !important;
+  box-shadow: 0 0 0 2px rgba(255, 60, 0, 0.2);
+}
+
+.product-image-placeholder,
+.org-logo-placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* ========== Borders & box-shadow utilities ========== */
+.border-top {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+.border-bottom {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.box-shadow {
+  box-shadow: var(--shadow-soft);
+}
+
+/* ========== Misc ========== */
+code {
+  background-color: var(--card-bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.2em 0.4em;
+}
+
+.spinner-border.text-primary {
+  color: var(--primary) !important;
+}
+
+/* Validation summary */
+.validation-summary-errors,
+.field-validation-error {
+  color: #f87171;
+}
+
+/* Table utility overrides for dark theme */
+.table-light th,
+.table-light td {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-color: var(--border-color);
+}
+
+.table-info th,
+.table-info td {
+  background-color: rgba(255, 60, 0, 0.08);
+  color: var(--text);
+  border-color: var(--border-color);
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+  border-radius: 8px;
+}
+
+.badge.bg-warning {
+  background: linear-gradient(135deg, #b45309, #f59e0b) !important;
+  color: #fff !important;
+}
+
+.badge.bg-success {
+  background: linear-gradient(135deg, #059669, #10b981) !important;
+  color: #fff !important;
+}
+
+.badge.bg-secondary {
+  background: var(--card-bg) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--border-color);
+}
+
+.badge.bg-light {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text) !important;
+}
+
+/* Catalog / product cards */
+.card-title.text-dark,
+.text-dark {
+  color: var(--text) !important;
+}
+
+.product-card {
+  border: 1px solid var(--border-color);
+}
+
+.product-card .card-title {
+  color: var(--text);
+}
+
+.product-card .card-text.text-success {
+  color: #34d399 !important;
 }

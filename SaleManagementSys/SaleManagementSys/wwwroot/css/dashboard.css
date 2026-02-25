@@ -1,32 +1,35 @@
-/* Dashboard Page Styles */
+/* Dashboard Page Styles - Spider Dark Theme */
 .dashboard-card {
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   border: none;
   overflow: hidden;
 }
 
 .dashboard-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* Today Sales - dark blue gradient */
 .card-gradient-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 50%, #1d4ed8 100%);
 }
 
+/* Today Profit - emerald green gradient */
 .card-gradient-success {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  background: linear-gradient(135deg, #064e3b 0%, #059669 50%, #10b981 100%);
 }
 
+/* Total Items Sold - soft purple gradient */
 .card-gradient-warning {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #8b5cf6 100%);
 }
 
 .card-icon {
   font-size: 3rem;
-  opacity: 0.3;
+  opacity: 0.35;
 }
 
 .card-value {
@@ -44,11 +47,8 @@
   letter-spacing: 1px;
 }
 
+/* sales-table-container base in site.css; dashboard overrides */
 .sales-table-container {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
   margin-top: 2rem;
 }
 
@@ -57,30 +57,23 @@
 }
 
 .sales-table-container .table thead th {
-  background-color: #f8f9fa;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.85rem;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #dee2e6;
-  color: #495057;
-}
-
-.sales-table-container .table tbody tr {
-  transition: background-color 0.2s;
-}
-
-.sales-table-container .table tbody tr:hover {
-  background-color: #f8f9fa;
 }
 
 .sales-table-container .action-buttons .btn {
   margin: 0 2px;
 }
 
+.sales-table-container h3 {
+  color: var(--text, #F5F5F5);
+}
+
 .navbar-custom {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--primary, #FF3C00), var(--primary-light, #FF6A00));
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 .navbar-custom .navbar-brand,
@@ -91,7 +84,7 @@
 
 .navbar-custom .navbar-brand:hover,
 .navbar-custom .nav-link:hover {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .user-icon {

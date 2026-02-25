@@ -22,13 +22,22 @@ body {
 }
 
 /* Ensure all interactive content is above canvas and receives clicks */
-header, .container, .modal, .modal-backdrop, main, .footer {
+header, .container, main {
     position: relative;
     z-index: 1;
     pointer-events: auto;
 }
-header, .container, .modal {
-    background: rgba(255, 255, 255, 0.96);
+/* Footer keeps position:fixed from site.css - do NOT override */
+.footer {
+    pointer-events: auto;
+}
+/* Modal/backdrop keep Bootstrap's high z-index (1050+) - do NOT override */
+.modal, .modal-backdrop {
+    pointer-events: auto;
+}
+/* Theme: transparent so dark background shows; modal-content in site.css stays solid */
+header, .container {
+    background: transparent;
 }
 
 /* Allow form/content areas to scroll */
