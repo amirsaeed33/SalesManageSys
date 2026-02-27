@@ -15,23 +15,16 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <div id="navbarUserBlock" class="d-flex align-items-center me-3" style="display: none !important;">
-                    <div class="dropdown">
-                        <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center text-dark dropdown-toggle" type="button" id="navbarUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span id="navbarUserCircle" class="navbar-brand-circle me-2"></span>
-                            <span id="navbarUserName" class="fw-medium"></span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="navbarUserDropdown">
-                            <li><a class="dropdown-item" href="#" id="navbarLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
+                <a class="navbar-brand d-flex align-items-center text-dark text-decoration-none me-4" asp-controller="Dashboard" asp-action="Index">
+                    @(await Component.InvokeAsync("OrganizationName", new { showLogo = true }))
+                    <span class="ms-2 fw-semibold">@(await Component.InvokeAsync("OrganizationName", new { showLogo = false }))</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-center flex-grow-1">
-                    <ul class="navbar-nav">
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-grow-1">
+                    <ul class="navbar-nav justify-content-center flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index"><i class="fas fa-home me-1"></i>Dashboard</a>
                         </li>
@@ -51,6 +44,17 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="OrganizationSettings" asp-action="Index"><i class="fas fa-cog me-1"></i>Organization</a>
                         </li>
                     </ul>
+                    <div id="navbarUserBlock" class="d-flex align-items-center ms-auto" style="display: none !important;">
+                        <div class="dropdown">
+                            <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center text-dark dropdown-toggle" type="button" id="navbarUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span id="navbarUserCircle" class="navbar-brand-circle me-2"></span>
+                                <span id="navbarUserName" class="fw-medium"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                                <li><a class="dropdown-item" href="#" id="navbarLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -94,7 +98,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/spider-cursor.js" asp-append-version="true"></script>
     <script>
-        // Navbar user block: show username + initials, logout dropdown (left side only)
+        // Navbar user block: show username + initials, logout dropdown (right side)
         (function () {
             var block = document.getElementById('navbarUserBlock');
             var circleEl = document.getElementById('navbarUserCircle');
