@@ -19,6 +19,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 100vh;
+    pointer-events: auto;
 }
 
 /* Ensure all interactive content is above canvas and receives clicks */
@@ -31,14 +32,17 @@ header, .container, main {
 .footer {
     pointer-events: auto;
 }
-/* Modals must sit above canvas and be fully interactive (Create Sale, Product form, Delete confirm, etc.) */
+/* Modals must sit above canvas and footer; be fully interactive (Create Sale, Product form, Delete confirm, etc.) */
 .modal,
 .modal-backdrop,
 .modal-dialog,
 .modal-content,
 .modal-header,
 .modal-body,
-.modal-footer {
+.modal-footer,
+.modal *,
+[role="dialog"],
+[role="dialog"] * {
     pointer-events: auto !important;
 }
 .modal {
@@ -46,6 +50,11 @@ header, .container, main {
 }
 .modal-backdrop {
     z-index: 1050 !important;
+}
+/* When a modal is open, raise .container above footer (z-index 1030) so modals inside main are clickable */
+body:has(.modal.show) .container {
+    z-index: 1040;
+    position: relative;
 }
 /* Theme: transparent so dark background shows; modal-content in site.css stays solid */
 header, .container {
