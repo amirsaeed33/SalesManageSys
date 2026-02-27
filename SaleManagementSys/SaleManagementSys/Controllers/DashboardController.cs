@@ -22,7 +22,6 @@ namespace SaleManagementSys.Controllers
             var todaySales = await _saleService.GetTodaySalesAsync();
             var todayProfit = await _saleService.GetTodayProfitAsync();
             var todayItemsSold = await _saleService.GetTodayProductsSoldAsync();
-            var sales = await _saleService.GetTodaySalesForDisplayAsync();
 
             var cards = new List<DashboardCardViewModel>
             {
@@ -33,8 +32,7 @@ namespace SaleManagementSys.Controllers
 
             var viewModel = new DashboardViewModel
             {
-                Cards = cards,
-                Sales = sales ?? new List<Sale>()
+                Cards = cards
             };
 
             return View(viewModel);
