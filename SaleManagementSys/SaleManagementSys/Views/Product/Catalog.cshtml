@@ -42,6 +42,14 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title text-dark">@product.Name</h5>
                             <p class="card-text text-success fw-bold fs-5 mb-2">@salePrice.ToString("C", pkrCulture)</p>
+                            <div class="d-flex align-items-center justify-content-between mb-2 product-qty-wrapper">
+                                <span class="small text-muted">Quantity</span>
+                                <div class="d-flex align-items-center product-qty-control">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm qty-decrease" aria-label="Decrease quantity">-</button>
+                                    <input type="text" class="form-control form-control-sm text-center mx-2 product-qty-input" value="1" readonly aria-label="Product quantity" />
+                                    <button type="button" class="btn btn-outline-secondary btn-sm qty-increase" aria-label="Increase quantity">+</button>
+                                </div>
+                            </div>
                             <button type="button" class="btn btn-success btn-add-order mt-auto">
                                 <i class="fas fa-plus me-1"></i>Add to Order
                             </button>
@@ -192,7 +200,7 @@
         border: none;
         overflow: hidden;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-        background: #fff;
+        background: #f8f9fa;
     }
     .product-card:hover {
         transform: translateY(-4px);
@@ -209,6 +217,20 @@
         object-fit: cover;
     }
     .btn-add-order { width: 100%; }
+    .product-card .card-title {
+        color: #000 !important;
+    }
+    .product-qty-control .btn {
+        min-width: 2rem;
+        padding: 0.15rem 0.4rem;
+    }
+    .product-qty-input {
+        max-width: 3rem;
+        background-color: #ffffff;
+        border-color: #ced4da;
+        color: #000 !important;
+        font-weight: 600;
+    }
 </style>
 
 @section Scripts {
@@ -310,13 +332,51 @@
             e.stopPropagation();
             var card = this.closest('.product-card');
             if (!card) return;
+            var qtyInput = card.querySelector('.product-qty-input');
+            var qty = 1;
+            if (qtyInput) {
+                var parsed = parseInt(qtyInput.value, 10);
+                if (!isNaN(parsed) && parsed > 0) {
+                    qty = parsed;
+                }
+            }
             addToCart(
                 parseInt(card.dataset.productId),
                 card.dataset.productName || '',
                 card.dataset.salePrice || '0',
                 card.dataset.purchasePrice || '0',
-                1
+                qty
             );
+            if (qtyInput) {
+                qtyInput.value = '1';
+            }
+        });
+    });
+
+    document.querySelectorAll('.product-card').forEach(function(card) {
+        var qtyInput = card.querySelector('.product-qty-input');
+        var decBtn = card.querySelector('.qty-decrease');
+        var incBtn = card.querySelector('.qty-increase');
+        if (!qtyInput || !decBtn || !incBtn) return;
+
+        decBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var current = parseInt(qtyInput.value, 10);
+            if (isNaN(current) || current <= 1) {
+                qtyInput.value = '1';
+            } else {
+                qtyInput.value = String(current - 1);
+            }
+        });
+
+        incBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var current = parseInt(qtyInput.value, 10);
+            if (isNaN(current) || current < 1) {
+                qtyInput.value = '1';
+            } else {
+                qtyInput.value = String(current + 1);
+            }
         });
     });
 
