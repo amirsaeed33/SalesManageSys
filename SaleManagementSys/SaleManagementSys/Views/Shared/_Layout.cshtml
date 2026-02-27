@@ -15,7 +15,17 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Dashboard" asp-action="Index">@await Component.InvokeAsync("OrganizationName", new { showLogo = true })</a>
+                <div id="navbarUserBlock" class="d-flex align-items-center me-3" style="display: none !important;">
+                    <div class="dropdown">
+                        <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center text-dark dropdown-toggle" type="button" id="navbarUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span id="navbarUserCircle" class="navbar-brand-circle me-2"></span>
+                            <span id="navbarUserName" class="fw-medium"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="navbarUserDropdown">
+                            <li><a class="dropdown-item" href="#" id="navbarLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -83,6 +93,46 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/spider-cursor.js" asp-append-version="true"></script>
+    <script>
+        // Navbar user block: show username + initials, logout dropdown (left side only)
+        (function () {
+            var block = document.getElementById('navbarUserBlock');
+            var circleEl = document.getElementById('navbarUserCircle');
+            var nameEl = document.getElementById('navbarUserName');
+            var logoutBtn = document.getElementById('navbarLogoutBtn');
+            if (!block || !circleEl || !nameEl) return;
+            var token = localStorage.getItem('authToken');
+            if (!token) return;
+            var username = localStorage.getItem('authUsername');
+            if (!username) {
+                try {
+                    var payload = token.split('.')[1];
+                    if (payload) {
+                        var json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+                        username = json.unique_name || json['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || json.sub || '';
+                        if (username) localStorage.setItem('authUsername', username);
+                    }
+                } catch (e) { }
+            }
+            if (!username) return;
+            var words = username.trim().split(/\s+/);
+            var initial = words[0] ? words[0].charAt(0).toUpperCase() : '';
+            if (words.length > 1 && words[1][0]) initial += words[1].charAt(0).toUpperCase();
+            else if (words[0] && words[0].length > 1) initial = words[0].substring(0, 2).toUpperCase();
+            circleEl.innerHTML = '<span class="navbar-brand-initials">' + (initial || '?') + '</span>';
+            circleEl.className = 'navbar-brand-circle me-2';
+            nameEl.textContent = username;
+            block.style.display = '';
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('authUsername');
+                    window.location.href = '/Home/Login';
+                });
+            }
+        })();
+    </script>
     <script>
         // Delete confirmation dialog (used by Sale and Product delete buttons)
         var deleteConfirmFormId = null;

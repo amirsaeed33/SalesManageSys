@@ -1,1 +1,54 @@
-[]
+[
+  {
+    "ContainingType": "SaleManagementSys.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SaleManagementSys.Models.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SaleManagementSys.Models.AuthResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SaleManagementSys.Controllers.AuthController",
+    "Method": "Register",
+    "RelativePath": "auth/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "SaleManagementSys.Models.RegisterRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "SaleManagementSys.Models.AuthResponse",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]

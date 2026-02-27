@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SaleManagementSys.Data;
 
@@ -11,9 +12,11 @@ using SaleManagementSys.Data;
 namespace SaleManagementSys.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260224100000_AddFirstNameLastNameToLogins")]
+    partial class AddFirstNameLastNameToLogins
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,43 +24,6 @@ namespace SaleManagementSys.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("SaleManagementSys.Models.Order", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Orders");
-                });
 
             modelBuilder.Entity("SaleManagementSys.Models.Login", b =>
                 {
@@ -97,6 +63,43 @@ namespace SaleManagementSys.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Logins");
+                });
+
+            modelBuilder.Entity("SaleManagementSys.Models.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Orders");
                 });
 
             modelBuilder.Entity("SaleManagementSys.Models.OrderDetail", b =>
