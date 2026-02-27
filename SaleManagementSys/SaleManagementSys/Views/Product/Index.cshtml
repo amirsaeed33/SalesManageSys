@@ -192,15 +192,6 @@
             var submitTextEl = document.getElementById('productFormSubmitText');
             var modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
 
-            function cleanupModalBackdrop() {
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = '';
-                document.querySelectorAll('.modal-backdrop').forEach(function (el) { el.remove(); });
-            }
-
-            modalEl.addEventListener('hidden.bs.modal', cleanupModalBackdrop);
-
             function updateProductImageCircle(imageUrl, file) {
                 var preview = document.getElementById('productImagePreview');
                 var placeholder = document.getElementById('productImagePlaceholder');
