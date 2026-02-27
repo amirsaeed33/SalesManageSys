@@ -49,12 +49,41 @@ header, .container, main {
     z-index: 1055 !important;
 }
 .modal-backdrop {
-    z-index: 1050 !important;
+    z-index: 1 !important;
 }
-/* When a modal is open, raise .container above footer (z-index 1030) so modals inside main are clickable */
-body:has(.modal.show) .container {
-    z-index: 1040;
+
+/* Dropdowns, popovers, tooltips: above footer (1030) so they are clickable */
+.dropdown-menu,
+.dropdown-menu *,
+.popover,
+.popover *,
+.tooltip,
+.tooltip *,
+[role="tooltip"],
+[role="tooltip"] * {
+    pointer-events: auto !important;
+}
+.dropdown-menu {
+    z-index: 1045 !important;
+}
+.popover, [role="tooltip"].popover {
+    z-index: 1045 !important;
+}
+.tooltip, [role="tooltip"]:not(.popover) {
+    z-index: 1045 !important;
+}
+/* Navbar dropdowns: ensure navbar is above footer when dropdown is open */
+.navbar {
     position: relative;
+    z-index: 1035;
+}
+/* When a modal is open (Bootstrap adds .modal-open to body), raise .container above footer so modals are clickable */
+body.modal-open .container {
+    z-index: 1040 !important;
+    position: relative;
+}
+body.modal-open .footer {
+    z-index: 100 !important;
 }
 /* Theme: transparent so dark background shows; modal-content in site.css stays solid */
 header, .container {
