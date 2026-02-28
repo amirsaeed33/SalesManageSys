@@ -1,8 +1,9 @@
 @model List<SaleManagementSys.Models.Order>
 @using System.Globalization
+@using SaleManagementSys.Helpers
 @{
     ViewData["Title"] = "Orders";
-    var pkrCulture = CultureInfo.GetCultureInfo("en-PK");
+    var pkrCulture = CurrencyHelper.PkrCulture;
 }
 
 <div class="container-fluid px-4">
