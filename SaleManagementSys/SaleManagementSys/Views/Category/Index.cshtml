@@ -17,6 +17,7 @@
                 <tr>
                     <th style="width: 90px;">Id</th>
                     <th>Name</th>
+                    <th>Description</th>
                     <th class="text-center col-action">Action</th>
                 </tr>
             </thead>
@@ -25,9 +26,10 @@
                 {
                     foreach (var c in Model)
                     {
-                        <tr data-id="@c.Id" data-name="@c.Name">
+                        <tr data-id="@c.Id" data-name="@c.Name" data-description="@(c.Description ?? "")">
                             <td>@c.Id</td>
                             <td>@c.Name</td>
+                            <td>@(string.IsNullOrWhiteSpace(c.Description) ? "—" : c.Description)</td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-sm btn-outline-primary me-1" title="Edit" onclick="categoryModal.open(this.closest('tr'));">
                                     <i class="fas fa-edit"></i>
@@ -44,7 +46,7 @@
                 }
                 else
                 {
-                    <tr><td colspan="3" class="text-center text-muted">No categories yet.</td></tr>
+                    <tr><td colspan="4" class="text-center text-muted">No categories yet.</td></tr>
                 }
             </tbody>
         </table>
@@ -72,6 +74,10 @@
                         <label for="categoryName" class="form-label">Category Name</label>
                         <input type="text" id="categoryName" name="Name" class="form-control" required maxlength="200" placeholder="Enter category name" />
                     </div>
+                    <div class="mb-3">
+                        <label for="categoryDescription" class="form-label">Description</label>
+                        <textarea id="categoryDescription" name="Description" class="form-control" rows="3" maxlength="1000" placeholder="Optional"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -95,11 +101,13 @@
                     if (!row) {
                         document.getElementById('categoryId').value = '0';
                         document.getElementById('categoryName').value = '';
+                        document.getElementById('categoryDescription').value = '';
                         titleEl.textContent = 'Add Category';
                         submitTextEl.textContent = 'Save';
                     } else {
                         document.getElementById('categoryId').value = row.dataset.id || '0';
                         document.getElementById('categoryName').value = row.dataset.name || '';
+                        document.getElementById('categoryDescription').value = row.dataset.description || '';
                         titleEl.textContent = 'Edit Category';
                         submitTextEl.textContent = 'Update';
                     }
