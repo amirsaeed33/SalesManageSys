@@ -12,6 +12,27 @@
 </head>
 <body>
     <canvas id="spiderCanvas"></canvas>
+    @{
+        var alertMessage = TempData["AlertMessage"]?.ToString() ?? TempData["Message"]?.ToString() ?? TempData["OrderError"]?.ToString();
+        var alertType = TempData["AlertType"]?.ToString()?.ToLowerInvariant();
+        if (string.IsNullOrEmpty(alertType) && TempData["OrderError"] != null) { alertType = "danger"; }
+        if (string.IsNullOrEmpty(alertType)) { alertType = "warning"; }
+    }
+    @if (!string.IsNullOrEmpty(alertMessage))
+    {
+        <div id="commonAlertBox" class="common-alert common-alert-@alertType" role="alert">
+            <div class="common-alert-body">
+                <span class="common-alert-icon">
+                    @if (alertType == "success") { <i class="fas fa-check-circle"></i> }
+                    else if (alertType == "danger") { <i class="fas fa-exclamation-circle"></i> }
+                    else if (alertType == "info") { <i class="fas fa-info-circle"></i> }
+                    else { <i class="fas fa-exclamation-triangle"></i> }
+                </span>
+                <span class="common-alert-text">@alertMessage</span>
+                <button type="button" class="btn-close common-alert-close" aria-label="Close" onclick="document.getElementById('commonAlertBox').classList.remove('common-alert-show');"></button>
+            </div>
+        </div>
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -97,6 +118,17 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/spider-cursor.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            var alertEl = document.getElementById('commonAlertBox');
+            if (alertEl) {
+                alertEl.classList.add('common-alert-show');
+                setTimeout(function () {
+                    alertEl.classList.remove('common-alert-show');
+                }, 6000);
+            }
+        })();
+    </script>
     <script>
         // Navbar user block: show username + initials, logout dropdown (right side)
         (function () {

@@ -50,7 +50,8 @@ namespace SaleManagementSys.Controllers
 
             if (!ModelState.IsValid)
             {
-                TempData["Message"] = "Please fix the errors below.";
+                TempData["AlertMessage"] = "Please fix the errors below.";
+                TempData["AlertType"] = "warning";
                 TempData["ProductId"] = product.Id;
                 TempData["ProductName"] = product.Name;
                 TempData["ProductPrice"] = product.DefaultPurchasePrice;
@@ -63,6 +64,8 @@ namespace SaleManagementSys.Controllers
             }
 
             await _productService.SaveProductAsync(product);
+            TempData["AlertMessage"] = "Product saved successfully.";
+            TempData["AlertType"] = "success";
             return RedirectToAction(nameof(Index));
         }
 
@@ -71,7 +74,15 @@ namespace SaleManagementSys.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             if (!await _productService.DeleteProductAsync(id))
-                TempData["Message"] = "Cannot delete: product is used in one or more sales.";
+            {
+                TempData["AlertMessage"] = "Cannot delete: product is used in one or more sales.";
+                TempData["AlertType"] = "danger";
+            }
+            else
+            {
+                TempData["AlertMessage"] = "Product deleted successfully.";
+                TempData["AlertType"] = "success";
+            }
             return RedirectToAction(nameof(Index));
         }
     }

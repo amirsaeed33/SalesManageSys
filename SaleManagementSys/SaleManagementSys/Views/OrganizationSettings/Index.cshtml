@@ -37,14 +37,6 @@
 <div class="container-fluid px-4">
     <h2 class="mb-4"><i class="fas fa-building me-2"></i>Organization Settings</h2>
 
-    @if (TempData["Message"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <form asp-action="Save" method="post" enctype="multipart/form-data" class="card shadow-sm">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="LogoUrl" />

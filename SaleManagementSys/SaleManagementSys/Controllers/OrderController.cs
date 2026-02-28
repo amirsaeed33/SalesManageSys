@@ -68,7 +68,8 @@ namespace SaleManagementSys.Controllers
             var (sale, errorMessage) = await _orderService.ProcessOrderAsync(id);
             if (sale != null)
                 return RedirectToAction("Index", "Sale");
-            TempData["OrderError"] = errorMessage ?? "Failed to process order.";
+            TempData["AlertMessage"] = errorMessage ?? "Failed to process order.";
+            TempData["AlertType"] = "danger";
             return RedirectToAction(nameof(Index));
         }
     }

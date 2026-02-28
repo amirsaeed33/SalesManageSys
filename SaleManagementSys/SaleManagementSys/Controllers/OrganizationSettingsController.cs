@@ -46,7 +46,8 @@ namespace SaleManagementSys.Controllers
             }
 
             await _settingsService.SaveAsync(settings);
-            TempData["Message"] = "Organization settings saved successfully.";
+            TempData["AlertMessage"] = "Organization settings saved successfully.";
+            TempData["AlertType"] = "success";
             return RedirectToAction(nameof(Index));
         }
     }

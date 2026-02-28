@@ -10,14 +10,6 @@
         <h2><i class="fas fa-clipboard-list me-2"></i>Orders</h2>
     </div>
 
-    @if (TempData["OrderError"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show">
-            @TempData["OrderError"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
             <thead>
