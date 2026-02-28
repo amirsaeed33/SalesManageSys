@@ -1,0 +1,55 @@
+@model List<SaleManagementSys.Models.Product>
+@using System.Globalization
+@using SaleManagementSys.Helpers
+@{
+    var pkrCulture = CurrencyHelper.PkrCulture;
+    var hasMore = ViewBag.HasMore == true;
+    var nextPage = ViewBag.NextPage ?? 2;
+}
+@if (Model != null)
+{
+    @foreach (var product in Model)
+    {
+        var salePrice = product.DefaultSalePrice ?? product.DefaultPurchasePrice;
+        var searchText = (product.Name + " " + (product.Description ?? "") + " " + salePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)).ToLowerInvariant();
+        <div class="col-md-4 col-sm-6 col-lg-3 store-product-col" data-search="@searchText">
+            <div class="product-card-gradient-wrap">
+                <canvas class="product-card-gl-canvas" aria-hidden="true"></canvas>
+                <div class="card product-card h-100 shadow-sm" data-product-id="@product.Id" data-product-name="@product.Name" data-sale-price="@salePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)" data-purchase-price="@product.DefaultPurchasePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)">
+                    <div class="product-card-image-wrapper catalog-img-open" role="button" tabindex="0" title="Click to open / zoom picture" data-img-src="@(string.IsNullOrWhiteSpace(product.ImageUrl) ? "https://placehold.co/400x300/e9ecef/6c757d?text=" + Uri.EscapeDataString(product.Name) : product.ImageUrl)" data-img-alt="@product.Name">
+                        <span class="store-card-price-badge">@salePrice.ToString("C", pkrCulture)</span>
+                        @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="@product.Name" class="card-img-top product-card-img" onerror="this.onerror=null; this.src='https://placehold.co/400x300/e9ecef/6c757d?text=No+Image';" />
+                        }
+                        else
+                        {
+                            <img src="https://placehold.co/400x300/e9ecef/6c757d?text=@Uri.EscapeDataString(product.Name)" alt="@product.Name" class="card-img-top product-card-img" />
+                        }
+                        <span class="catalog-img-hint"><i class="fas fa-search-plus"></i> Open</span>
+                    </div>
+                    <div class="card-body d-flex flex-column store-card-body">
+                        <h5 class="card-title store-card-title">@product.Name</h5>
+                        @if (!string.IsNullOrWhiteSpace(product.Description))
+                        {
+                            <p class="card-text store-card-desc small text-muted mb-2">@(product.Description.Length > 80 ? product.Description.Substring(0, 80) + "…" : product.Description)</p>
+                        }
+                        <p class="store-card-price mb-2">@salePrice.ToString("C", pkrCulture)</p>
+                        <div class="d-flex align-items-center justify-content-between mb-2 product-qty-wrapper">
+                            <span class="small text-muted">Quantity</span>
+                            <div class="d-flex align-items-center product-qty-control">
+                                <button type="button" class="btn btn-outline-secondary btn-sm qty-decrease" aria-label="Decrease quantity">-</button>
+                                <input type="text" class="form-control form-control-sm text-center mx-2 product-qty-input" value="1" readonly aria-label="Product quantity" />
+                                <button type="button" class="btn btn-outline-secondary btn-sm qty-increase" aria-label="Increase quantity">+</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-success btn-add-order mt-auto">
+                            <i class="fas fa-plus me-1"></i>Add to Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+<div class="d-none catalog-page-meta" data-has-more="@(hasMore ? "true" : "false")" data-next-page="@nextPage"></div>

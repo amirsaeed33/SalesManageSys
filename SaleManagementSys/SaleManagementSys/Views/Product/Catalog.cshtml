@@ -72,6 +72,15 @@
                 </div>
             }
         </div>
+        @if (ViewBag.CatalogHasMore == true)
+        {
+            <div id="storeScrollSentinel" class="text-center py-4" data-next-page="2" data-page-size="@(ViewBag.CatalogPageSize ?? 12)" data-has-more="true">
+                <div class="catalog-loading-spinner d-none">
+                    <span class="spinner-border spinner-border-sm text-primary me-2" aria-hidden="true"></span>
+                    <span>Loading more products...</span>
+                </div>
+            </div>
+        }
         <div id="storeNoResults" class="text-center py-5 d-none">
             <i class="fas fa-search fa-4x text-muted mb-3"></i>
             <p class="text-muted fs-5 mb-0">No products match your search. Try a different term.</p>
@@ -390,15 +399,15 @@
     var CART_KEY = 'store_cart';
     var createOrderUrl = '@Url.Action("Create", "Order")';
 
-    // Store search filter
+    // Store search filter (queries grid each time so newly loaded products are included)
     (function initStoreSearch() {
         var searchInput = document.getElementById('storeSearchInput');
         var grid = document.getElementById('storeProductGrid');
         var noResults = document.getElementById('storeNoResults');
         if (!searchInput || !grid) return;
-        var cols = grid.querySelectorAll('.store-product-col');
         searchInput.addEventListener('input', function() {
             var q = (this.value || '').trim().toLowerCase();
+            var cols = grid.querySelectorAll('.store-product-col');
             var visible = 0;
             cols.forEach(function(col) {
                 var show = !q || (col.getAttribute('data-search') || '').indexOf(q) !== -1;
@@ -499,60 +508,103 @@
         });
     }
 
-    document.querySelectorAll('.btn-add-order').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var card = this.closest('.product-card');
-            if (!card) return;
-            var qtyInput = card.querySelector('.product-qty-input');
-            var qty = 1;
-            if (qtyInput) {
-                var parsed = parseInt(qtyInput.value, 10);
-                if (!isNaN(parsed) && parsed > 0) {
-                    qty = parsed;
+    // Add to order + qty: event delegation so dynamically loaded cards work
+    var grid = document.getElementById('storeProductGrid');
+    if (grid) {
+        grid.addEventListener('click', function(e) {
+            var btn = e.target.closest('.btn-add-order');
+            if (btn) {
+                e.stopPropagation();
+                var card = btn.closest('.product-card');
+                if (!card) return;
+                var qtyInput = card.querySelector('.product-qty-input');
+                var qty = 1;
+                if (qtyInput) {
+                    var parsed = parseInt(qtyInput.value, 10);
+                    if (!isNaN(parsed) && parsed > 0) qty = parsed;
+                }
+                addToCart(
+                    parseInt(card.dataset.productId),
+                    card.dataset.productName || '',
+                    card.dataset.salePrice || '0',
+                    card.dataset.purchasePrice || '0',
+                    qty
+                );
+                if (qtyInput) qtyInput.value = '1';
+                return;
+            }
+            var decBtn = e.target.closest('.qty-decrease');
+            if (decBtn) {
+                e.stopPropagation();
+                var card = decBtn.closest('.product-card');
+                var qtyInput = card && card.querySelector('.product-qty-input');
+                if (qtyInput) {
+                    var current = parseInt(qtyInput.value, 10);
+                    qtyInput.value = (isNaN(current) || current <= 1) ? '1' : String(current - 1);
+                }
+                return;
+            }
+            var incBtn = e.target.closest('.qty-increase');
+            if (incBtn) {
+                e.stopPropagation();
+                var card = incBtn.closest('.product-card');
+                var qtyInput = card && card.querySelector('.product-qty-input');
+                if (qtyInput) {
+                    var current = parseInt(qtyInput.value, 10);
+                    qtyInput.value = (isNaN(current) || current < 1) ? '1' : String(current + 1);
                 }
             }
-            addToCart(
-                parseInt(card.dataset.productId),
-                card.dataset.productName || '',
-                card.dataset.salePrice || '0',
-                card.dataset.purchasePrice || '0',
-                qty
-            );
-            if (qtyInput) {
-                qtyInput.value = '1';
-            }
         });
-    });
+    }
 
-    document.querySelectorAll('.product-card').forEach(function(card) {
-        var qtyInput = card.querySelector('.product-qty-input');
-        var decBtn = card.querySelector('.qty-decrease');
-        var incBtn = card.querySelector('.qty-increase');
-        if (!qtyInput || !decBtn || !incBtn) return;
+    // Infinite scroll: load more products when sentinel is visible
+    (function initInfiniteScroll() {
+        var sentinel = document.getElementById('storeScrollSentinel');
+        var gridEl = document.getElementById('storeProductGrid');
+        if (!sentinel || !gridEl) return;
+        var catalogPageUrl = '@Url.Action("CatalogPage", "Product")';
+        var loading = false;
 
-        decBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var current = parseInt(qtyInput.value, 10);
-            if (isNaN(current) || current <= 1) {
-                qtyInput.value = '1';
-            } else {
-                qtyInput.value = String(current - 1);
-            }
-        });
+        function loadMore() {
+            if (loading) return;
+            var nextPage = parseInt(sentinel.getAttribute('data-next-page'), 10);
+            var pageSize = parseInt(sentinel.getAttribute('data-page-size'), 10) || 12;
+            if (!nextPage || sentinel.getAttribute('data-has-more') !== 'true') return;
+            loading = true;
+            var spinner = sentinel.querySelector('.catalog-loading-spinner');
+            if (spinner) spinner.classList.remove('d-none');
+            var searchInput = document.getElementById('storeSearchInput');
+            var search = (searchInput && searchInput.value) ? searchInput.value.trim() : '';
+            var url = catalogPageUrl + '?page=' + nextPage + '&pageSize=' + pageSize;
+            if (search) url += '&search=' + encodeURIComponent(search);
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.text(); })
+                .then(function(html) {
+                    var wrap = document.createElement('div');
+                    wrap.innerHTML = html.trim();
+                    var meta = wrap.querySelector('.catalog-page-meta');
+                    var cols = wrap.querySelectorAll('.store-product-col');
+                    cols.forEach(function(col) { gridEl.appendChild(col); });
+                    if (meta) {
+                        sentinel.setAttribute('data-has-more', meta.getAttribute('data-has-more') || 'false');
+                        sentinel.setAttribute('data-next-page', meta.getAttribute('data-next-page') || '2');
+                        if (meta.getAttribute('data-has-more') !== 'true') sentinel.classList.add('d-none');
+                    }
+                    if (window.initNewProductCardCanvases) window.initNewProductCardCanvases(gridEl);
+                })
+                .catch(function() { sentinel.setAttribute('data-has-more', 'false'); sentinel.classList.add('d-none'); })
+                .finally(function() {
+                    loading = false;
+                    if (spinner) spinner.classList.add('d-none');
+                });
+        }
 
-        incBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var current = parseInt(qtyInput.value, 10);
-            if (isNaN(current) || current < 1) {
-                qtyInput.value = '1';
-            } else {
-                qtyInput.value = String(current + 1);
-            }
-        });
-    });
+        var observer = new IntersectionObserver(function(entries) {
+            if (entries[0].isIntersecting) loadMore();
+        }, { rootMargin: '200px', threshold: 0 });
+        observer.observe(sentinel);
+    })();
 
-    // Image viewer: WebGL zoom
     var imageViewerModal = document.getElementById('imageViewerModal');
     var imageViewerImg = document.getElementById('imageViewerImg');
     var imageViewerLabel = document.getElementById('imageViewerModalLabel');
@@ -692,38 +744,49 @@
         imageViewerGL.fit = getFitRect(img.naturalWidth, img.naturalHeight, cw, ch);
     }
 
-    document.querySelectorAll('.catalog-img-open').forEach(function(el) {
-        el.addEventListener('click', function() {
-            var src = this.getAttribute('data-img-src');
-            var alt = this.getAttribute('data-img-alt') || '';
-            if (!imageViewerImg || !src) return;
-            if (imageViewerRaf) cancelAnimationFrame(imageViewerRaf);
-            imageViewerRaf = null;
-            imageViewerZoom = 1;
-            imageViewerPanX = 0;
-            imageViewerPanY = 0;
-            if (imageViewerLabel) imageViewerLabel.textContent = alt;
-            if (!imageViewerGL) imageViewerGL = createImageViewerGL();
-            if (!imageViewerGL) {
-                imageViewerImg.classList.remove('d-none');
-                imageViewerImg.src = src;
-                imageViewerImg.alt = alt;
-                var modal = new bootstrap.Modal(imageViewerModal);
-                modal.show();
-                return;
-            }
-            imageViewerImg.alt = alt;
-            imageViewerImg.onload = function() {
-                imageViewerLoadTexture(imageViewerImg);
-                imageViewerRaf = requestAnimationFrame(imageViewerDraw);
-            };
+    function openImageViewer(el) {
+        var src = el.getAttribute('data-img-src');
+        var alt = el.getAttribute('data-img-alt') || '';
+        if (!imageViewerImg || !src) return;
+        if (imageViewerRaf) cancelAnimationFrame(imageViewerRaf);
+        imageViewerRaf = null;
+        imageViewerZoom = 1;
+        imageViewerPanX = 0;
+        imageViewerPanY = 0;
+        if (imageViewerLabel) imageViewerLabel.textContent = alt;
+        if (!imageViewerGL) imageViewerGL = createImageViewerGL();
+        if (!imageViewerGL) {
+            imageViewerImg.classList.remove('d-none');
             imageViewerImg.src = src;
+            imageViewerImg.alt = alt;
             var modal = new bootstrap.Modal(imageViewerModal);
             modal.show();
-        });
-        el.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
-        });
+            return;
+        }
+        imageViewerImg.alt = alt;
+        imageViewerImg.onload = function() {
+            imageViewerLoadTexture(imageViewerImg);
+            imageViewerRaf = requestAnimationFrame(imageViewerDraw);
+        };
+        imageViewerImg.src = src;
+        var modal = new bootstrap.Modal(imageViewerModal);
+        modal.show();
+    }
+
+    document.addEventListener('click', function(e) {
+        var el = e.target.closest('.catalog-img-open');
+        if (el) {
+            e.preventDefault();
+            openImageViewer(el);
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var el = e.target.closest('.catalog-img-open');
+        if (el) {
+            e.preventDefault();
+            openImageViewer(el);
+        }
     });
 
     if (imageViewerModal) {
@@ -890,6 +953,7 @@
     }
 
     function initCardGL(canvas) {
+        if (canvas.classList.contains('gl-inited')) return;
         var wrap = canvas.closest('.product-card-gradient-wrap');
         if (!wrap) return;
         var w = wrap.clientWidth;
@@ -936,11 +1000,16 @@
         }
         gl.viewport(0, 0, w, h);
         requestAnimationFrame(draw);
+        canvas.classList.add('gl-inited');
     }
 
     function initAllCards() {
         document.querySelectorAll('.product-card-gl-canvas').forEach(initCardGL);
     }
+    window.initNewProductCardCanvases = function(container) {
+        var list = (container || document).querySelectorAll('.product-card-gl-canvas:not(.gl-inited)');
+        list.forEach(initCardGL);
+    };
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() { setTimeout(initAllCards, 50); });
     } else {

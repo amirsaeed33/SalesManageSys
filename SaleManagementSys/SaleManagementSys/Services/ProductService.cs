@@ -17,6 +17,7 @@ namespace SaleManagementSys.Services
         {
             return await _context.Products
                 .AsNoTracking()
+                .Include(p => p.Category)
                 .OrderBy(p => p.Name)
                 .ToListAsync();
         }
@@ -25,9 +26,35 @@ namespace SaleManagementSys.Services
         {
             return await _context.Products
                 .AsNoTracking()
+                .Include(p => p.Category)
                 .Where(p => p.IsActive)
                 .OrderBy(p => p.Name)
                 .ToListAsync();
+        }
+
+        public async Task<(List<Product> Items, int TotalCount)> GetActiveProductsPagedAsync(int skip, int take, string? search = null)
+        {
+            var query = _context.Products
+                .AsNoTracking()
+                .Include(p => p.Category)
+                .Where(p => p.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                query = query.Where(p =>
+                    (p.Name != null && p.Name.ToLower().Contains(term)) ||
+                    (p.Description != null && p.Description.ToLower().Contains(term)));
+            }
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderBy(p => p.Name)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+
+            return (items, totalCount);
         }
 
         public async Task<Product?> GetProductByIdAsync(int id)

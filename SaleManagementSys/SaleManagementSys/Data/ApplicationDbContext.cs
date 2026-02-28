@@ -15,6 +15,7 @@ namespace SaleManagementSys.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Category> Categories { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
         public DbSet<Login> Logins { get; set; }
 
@@ -55,6 +56,19 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.IsActive).HasDefaultValue(true);
                 entity.Property(e => e.StockQuantity).HasDefaultValue(0);
             });
+
+            // Configure Category entity
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Configure SaleDetail entity
             modelBuilder.Entity<SaleDetail>(entity =>

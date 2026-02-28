@@ -7,24 +7,44 @@ namespace SaleManagementSys.Controllers
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
         private readonly IWebHostEnvironment _env;
 
-        public ProductController(IProductService productService, IWebHostEnvironment env)
+        public ProductController(IProductService productService, ICategoryService categoryService, IWebHostEnvironment env)
         {
             _productService = productService;
+            _categoryService = categoryService;
             _env = env;
         }
 
         public async Task<IActionResult> Index()
         {
             var products = await _productService.GetAllProductsAsync();
-            return View(products);
+            var categories = await _categoryService.GetAllAsync();
+            return View(new ProductIndexViewModel { Products = products, Categories = categories });
         }
 
         public async Task<IActionResult> Catalog()
         {
-            var products = await _productService.GetActiveProductsAsync();
-            return View(products);
+            const int pageSize = 8;
+            var (items, totalCount) = await _productService.GetActiveProductsPagedAsync(0, pageSize);
+            ViewBag.CatalogTotalCount = totalCount;
+            ViewBag.CatalogHasMore = totalCount > pageSize;
+            ViewBag.CatalogPageSize = pageSize;
+            return View(items);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CatalogPage(int page = 1, int pageSize = 8, string? search = null)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 50) pageSize = 8;
+            var skip = (page - 1) * pageSize;
+            var (items, totalCount) = await _productService.GetActiveProductsPagedAsync(skip, pageSize, search);
+            var hasMore = skip + items.Count < totalCount;
+            ViewBag.HasMore = hasMore;
+            ViewBag.NextPage = page + 1;
+            return PartialView("_CatalogProductBatch", items);
         }
 
         [HttpGet]
@@ -57,6 +77,7 @@ namespace SaleManagementSys.Controllers
                 TempData["ProductPrice"] = product.DefaultPurchasePrice;
                 TempData["ProductDefaultSalePrice"] = product.DefaultSalePrice;
                 TempData["ProductStockQuantity"] = product.StockQuantity;
+                TempData["ProductCategoryId"] = product.CategoryId;
                 TempData["ProductImageUrl"] = product.ImageUrl ?? "";
                 TempData["ProductDescription"] = product.Description ?? "";
                 TempData["ProductIsActive"] = product.IsActive;

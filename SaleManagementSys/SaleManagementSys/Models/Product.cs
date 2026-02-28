@@ -36,5 +36,9 @@ namespace SaleManagementSys.Models
         [Display(Name = "Stock Quantity")]
         [Range(0, int.MaxValue, ErrorMessage = "Stock quantity must be >= 0")]
         public int StockQuantity { get; set; }
+
+        [Display(Name = "Category")]
+        public int? CategoryId { get; set; }
+        public virtual Category? Category { get; set; }
     }
 }

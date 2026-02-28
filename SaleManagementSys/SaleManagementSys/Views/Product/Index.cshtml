@@ -1,4 +1,4 @@
-@model List<SaleManagementSys.Models.Product>
+@model SaleManagementSys.Models.ProductIndexViewModel
 @using System.Globalization
 @using System.Text.Json
 @using SaleManagementSys.Helpers
@@ -44,11 +44,16 @@
 }
 
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-box me-2"></i>Products</h2>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productFormModal" onclick="productModal.open();">
-            <i class="fas fa-plus me-2"></i>Add Product
-        </button>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="mb-0"><i class="fas fa-box me-2"></i>Products</h2>
+        <div class="d-flex gap-2">
+            <a asp-controller="Category" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-tags me-2"></i>Categories
+            </a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productFormModal" onclick="productModal.open();">
+                <i class="fas fa-plus me-2"></i>Add Product
+            </button>
+        </div>
     </div>
 
     <div class="mb-3">
@@ -64,6 +69,7 @@
                 <tr>
                     <th>#</th>
                     <th>Name</th>
+                    <th>Category</th>
                     <th>Purchase Price</th>
                     <th>Sale Price</th>
                     <th class="text-center">Stock</th>
@@ -73,21 +79,23 @@
                 </tr>
             </thead>
             <tbody>
-                @if (Model != null && Model.Any())
+                @if (Model?.Products != null && Model.Products.Any())
                 {
                     var i = 1;
-                    foreach (var p in Model)
+                    foreach (var p in Model.Products)
                     {
                         <tr data-id="@p.Id"
                             data-name="@p.Name"
                             data-price="@p.DefaultPurchasePrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
                             data-saleprice="@((p.DefaultSalePrice ?? p.DefaultPurchasePrice).ToString("F2", System.Globalization.CultureInfo.InvariantCulture))"
                             data-stockquantity="@p.StockQuantity"
+                            data-categoryid="@(p.CategoryId?.ToString() ?? "")"
                             data-imageurl="@(p.ImageUrl ?? "")"
                             data-description="@(p.Description ?? "")"
                             data-active="@(p.IsActive ? "true" : "false")">
                             <td>@i</td>
                             <td>@p.Name</td>
+                            <td>@(p.Category?.Name ?? "—")</td>
                             <td>@p.DefaultPurchasePrice.ToString("C", pkrCulture)</td>
                             <td>@((p.DefaultSalePrice ?? p.DefaultPurchasePrice).ToString("C", pkrCulture))</td>
                             <td class="text-center">@p.StockQuantity</td>
@@ -115,9 +123,9 @@
                 }
                 else
                 {
-                    <tr><td colspan="8" class="text-center text-muted">No products. Click "Add Product" to create one.</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted">No products. Click "Add Product" to create one.</td></tr>
                 }
-                <tr id="productNoSearchResults" style="display: none;"><td colspan="8" class="text-center text-muted">No matching products.</td></tr>
+                <tr id="productNoSearchResults" style="display: none;"><td colspan="9" class="text-center text-muted">No matching products.</td></tr>
             </tbody>
         </table>
     </div>
@@ -150,6 +158,19 @@
                     <div class="mb-3">
                         <label for="productName" class="form-label">Product Name</label>
                         <input type="text" id="productName" name="Name" class="form-control" required maxlength="200" placeholder="Enter product name" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="productCategoryId" class="form-label">Category</label>
+                        <select id="productCategoryId" name="CategoryId" class="form-select">
+                            <option value="">— None —</option>
+                            @if (Model?.Categories != null)
+                            {
+                                foreach (var c in Model.Categories)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            }
+                        </select>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -225,9 +246,11 @@
             window.productModal = {
                 open: function (row) {
                     var isActiveEl = document.getElementById('productIsActive');
+                    var categoryEl = document.getElementById('productCategoryId');
                     if (!row) {
                         document.getElementById('productId').value = '0';
                         document.getElementById('productName').value = '';
+                        if (categoryEl) categoryEl.value = '';
                         document.getElementById('productPrice').value = '0';
                         document.getElementById('productSalePrice').value = '';
                         document.getElementById('productStockQuantity').value = '0';
@@ -239,6 +262,7 @@
                     } else {
                         document.getElementById('productId').value = row.dataset.id || '0';
                         document.getElementById('productName').value = row.dataset.name || '';
+                        if (categoryEl) categoryEl.value = row.dataset.categoryid || '';
                         document.getElementById('productPrice').value = row.dataset.price || '0';
                         document.getElementById('productSalePrice').value = row.dataset.saleprice || '';
                         document.getElementById('productStockQuantity').value = row.dataset.stockquantity || '0';
@@ -296,6 +320,7 @@
             var reopenPrice = TempData["ProductPrice"]?.ToString() ?? "0";
             var reopenSalePrice = TempData["ProductDefaultSalePrice"]?.ToString() ?? "";
             var reopenStock = TempData["ProductStockQuantity"]?.ToString() ?? "0";
+            var reopenCategoryId = TempData["ProductCategoryId"]?.ToString() ?? "";
             var reopenImageUrl = TempData["ProductImageUrl"]?.ToString() ?? "";
             var reopenDesc = TempData["ProductDescription"]?.ToString() ?? "";
             var reopenActive = TempData["ProductIsActive"] as bool? ?? true;
@@ -310,6 +335,7 @@
                 row.dataset.price = @Html.Raw(JsonSerializer.Serialize(reopenPrice));
                 row.dataset.saleprice = @Html.Raw(JsonSerializer.Serialize(reopenSalePrice));
                 row.dataset.stockquantity = @Html.Raw(JsonSerializer.Serialize(reopenStock));
+                row.dataset.categoryid = @Html.Raw(JsonSerializer.Serialize(reopenCategoryId));
                 row.dataset.imageurl = @Html.Raw(JsonSerializer.Serialize(reopenImageUrl));
                 row.dataset.description = @Html.Raw(JsonSerializer.Serialize(reopenDesc));
                 row.dataset.active = @Html.Raw(JsonSerializer.Serialize(reopenActive));
