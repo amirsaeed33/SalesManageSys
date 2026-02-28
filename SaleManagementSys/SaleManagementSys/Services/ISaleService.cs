@@ -25,6 +25,11 @@ namespace SaleManagementSys.Services
         /// </summary>
         Task<int> GetTodayProductsSoldAsync();
 
+        /// <summary>
+        /// Gets daily sales and profit for the last 7 days (for dashboard chart).
+        /// </summary>
+        Task<List<DailySaleSummary>> GetLast7DaysSalesAsync();
+
         Task<bool> DeleteSaleAsync(int id);
     }
 }

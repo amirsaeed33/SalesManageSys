@@ -105,6 +105,29 @@ namespace SaleManagementSys.Services
                 .SumAsync(sd => sd.Quantity);
         }
 
+        public async Task<List<DailySaleSummary>> GetLast7DaysSalesAsync()
+        {
+            var start = DateTime.Today.AddDays(-6);
+            var end = DateTime.Today;
+            var query = _context.Sales
+                .AsNoTracking()
+                .Where(s => s.SaleDate.Date >= start && s.SaleDate.Date <= end)
+                .GroupBy(s => s.SaleDate.Date)
+                .Select(g => new DailySaleSummary
+                {
+                    Date = g.Key,
+                    TotalAmount = g.Sum(s => s.TotalAmount),
+                    TotalProfit = g.Sum(s => s.TotalProfit)
+                });
+            var list = await query.ToListAsync();
+            for (var d = start; d <= end; d = d.AddDays(1))
+            {
+                if (list.All(x => x.Date.Date != d))
+                    list.Add(new DailySaleSummary { Date = d, TotalAmount = 0, TotalProfit = 0 });
+            }
+            return list.OrderBy(x => x.Date).ToList();
+        }
+
         public async Task<bool> DeleteSaleAsync(int id)
         {
             var sale = await _context.Sales.FindAsync(id);

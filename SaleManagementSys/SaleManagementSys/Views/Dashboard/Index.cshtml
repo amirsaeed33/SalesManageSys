@@ -1,12 +1,21 @@
 @model DashboardViewModel
+@using System.Text.Json
 @{
     ViewData["Title"] = "Sales Management Dashboard";
+    var username = Model.Username ?? "";
+    var chartLabelsJson = JsonSerializer.Serialize(Model.ChartLabels);
+    var chartSalesJson = JsonSerializer.Serialize(Model.ChartSales.Select(x => (double)x));
+    var chartProfitJson = JsonSerializer.Serialize(Model.ChartProfit.Select(x => (double)x));
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
 }
 
 <div class="container-fluid px-4">
+    <h1 class="dashboard-welcome mb-4">
+        <i class="fas fa-heart dashboard-welcome-heart me-2" aria-hidden="true"></i>Welcome back, <span id="dashboardUserName">@(string.IsNullOrEmpty(username) ? "..." : username)</span>
+    </h1>
+
     <!-- Dashboard Cards Section -->
     <div class="row g-4 mb-4">
         @foreach (var card in Model.Cards)
@@ -28,13 +37,92 @@
             </div>
         }
     </div>
+
+    <!-- Sales chart - Last 7 days -->
+    <div class="card dashboard-chart-card mb-4">
+        <div class="card-body p-4">
+            <h5 class="card-title mb-4"><i class="fas fa-chart-bar me-2"></i>Sales &amp; Profit (Last 7 Days)</h5>
+            <div class="chart-container">
+                <canvas id="dashboardChart" aria-label="Sales and profit chart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
     <script>
-        // Add any custom JavaScript here if needed
-        $(document).ready(function() {
-            // Optional: Add animations or interactions
-        });
+        (function () {
+            var userNameEl = document.getElementById('dashboardUserName');
+            if (userNameEl && (!userNameEl.textContent || userNameEl.textContent.trim() === '...')) {
+                var stored = localStorage.getItem('authUsername');
+                if (stored) userNameEl.textContent = stored;
+                else userNameEl.textContent = 'User';
+            }
+        })();
+        (function () {
+            var labels = @Html.Raw(chartLabelsJson);
+            var sales = @Html.Raw(chartSalesJson);
+            var profit = @Html.Raw(chartProfitJson);
+            var ctx = document.getElementById('dashboardChart');
+            if (!ctx || typeof Chart === 'undefined') return;
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Sales',
+                            data: sales,
+                            backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                            borderColor: 'rgb(37, 99, 235)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Profit',
+                            data: profit,
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: 'rgb(16, 185, 129)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2.2,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#F5F5F5' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    var v = ctx.raw;
+                                    return ctx.dataset.label + ': Rs ' + (v || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#A0A0A0' },
+                            grid: { color: 'rgba(255,255,255,0.06)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#A0A0A0',
+                                callback: function (v) {
+                                    return 'Rs ' + (v >= 1000 ? (v / 1000) + 'k' : v);
+                                }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.06)' }
+                        }
+                    }
+                }
+            });
+        })();
     </script>
 }
