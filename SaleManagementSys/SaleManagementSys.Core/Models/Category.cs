@@ -17,4 +17,3 @@ namespace SaleManagementSys.Models
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }
-

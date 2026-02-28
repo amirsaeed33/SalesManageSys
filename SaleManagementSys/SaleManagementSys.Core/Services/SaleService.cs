@@ -48,19 +48,12 @@ namespace SaleManagementSys.Services
 
         public async Task AddSaleAsync(Sale sale)
         {
-            // Ensure SaleDetails is initialized
             if (sale.SaleDetails == null)
-            {
                 sale.SaleDetails = new List<SaleDetail>();
-            }
 
-            // Ensure SaleDate is set before saving (current DateTime, not user-editable)
             if (sale.SaleDate == default(DateTime) || sale.SaleDate == DateTime.MinValue)
-            {
                 sale.SaleDate = DateTime.Now;
-            }
 
-            // Calculate TotalAmount and TotalProfit before saving
             if (sale.SaleDetails.Any())
             {
                 sale.TotalAmount = sale.SaleDetails.Sum(sd => sd.SalePrice * sd.Quantity);
@@ -72,10 +65,7 @@ namespace SaleManagementSys.Services
                 sale.TotalProfit = 0;
             }
 
-            // Add the sale first - EF Core will track SaleDetails through the navigation property
             _context.Sales.Add(sale);
-            
-            // Save changes - EF Core will automatically save SaleDetails because they're in the SaleDetails collection
             await _context.SaveChangesAsync();
         }
 

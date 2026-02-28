@@ -10,9 +10,18 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="auth-page">
+    <!-- Common loader (same as main layout) - shows during login/register fetch -->
+    <div id="commonLoader" class="common-loader" aria-hidden="true" aria-live="polite">
+        <div class="common-loader-backdrop"></div>
+        <div class="common-loader-spinner-wrap">
+            <div class="loader"></div>
+            <span class="common-loader-text">Loading...</span>
+        </div>
+    </div>
     @RenderBody()
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

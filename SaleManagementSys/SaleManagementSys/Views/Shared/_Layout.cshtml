@@ -11,6 +11,14 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
+    <!-- Common loader: centered overlay during DB/navigation tasks -->
+    <div id="commonLoader" class="common-loader" aria-hidden="true" aria-live="polite">
+        <div class="common-loader-backdrop"></div>
+        <div class="common-loader-spinner-wrap">
+            <div class="loader"></div>
+            <span class="common-loader-text">Loading...</span>
+        </div>
+    </div>
     <canvas id="spiderCanvas"></canvas>
     @{
         var alertMessage = TempData["AlertMessage"]?.ToString() ?? TempData["Message"]?.ToString() ?? TempData["OrderError"]?.ToString();
@@ -72,7 +80,7 @@
                                 <span id="navbarUserName" class="fw-medium"></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
-                                <li><a class="dropdown-item" href="#" id="navbarLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                <li><a class="dropdown-item" href="/Home/Logout" id="navbarLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
                             </ul>
                         </div>
                     </div>
@@ -164,7 +172,7 @@
                     e.preventDefault();
                     localStorage.removeItem('authToken');
                     localStorage.removeItem('authUsername');
-                    window.location.href = '/Home/Login';
+                    window.location.href = logoutBtn.getAttribute('href') || '/Home/Logout';
                 });
             }
         })();

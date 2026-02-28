@@ -23,28 +23,17 @@ namespace SaleManagementSys.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Sale entity
             modelBuilder.Entity<Sale>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.CustomerName)
-                    .IsRequired()
-                    .HasMaxLength(200);
-                entity.Property(e => e.PhoneNumber)
-                    .HasMaxLength(20);
-                entity.Property(e => e.Address)
-                    .HasMaxLength(500);
-                entity.Property(e => e.SaleDate)
-                    .IsRequired();
-                entity.Property(e => e.TotalAmount)
-                    .IsRequired()
-                    .HasColumnType("decimal(18,2)");
-                entity.Property(e => e.TotalProfit)
-                    .IsRequired()
-                    .HasColumnType("decimal(18,2)");
+                entity.Property(e => e.CustomerName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+                entity.Property(e => e.Address).HasMaxLength(500);
+                entity.Property(e => e.SaleDate).IsRequired();
+                entity.Property(e => e.TotalAmount).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.TotalProfit).IsRequired().HasColumnType("decimal(18,2)");
             });
 
-            // Configure Product entity
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -57,7 +46,6 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.StockQuantity).HasDefaultValue(0);
             });
 
-            // Configure Category entity
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -71,7 +59,6 @@ namespace SaleManagementSys.Data
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Configure SaleDetail entity
             modelBuilder.Entity<SaleDetail>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -81,21 +68,18 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.Description).HasMaxLength(1000);
             });
 
-            // Configure one-to-many relationship between Sale and SaleDetail
             modelBuilder.Entity<SaleDetail>()
                 .HasOne(sd => sd.Sale)
                 .WithMany(s => s.SaleDetails)
                 .HasForeignKey(sd => sd.SaleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure many-to-one relationship between SaleDetail and Product
             modelBuilder.Entity<SaleDetail>()
                 .HasOne(sd => sd.Product)
                 .WithMany()
                 .HasForeignKey(sd => sd.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure Order entity
             modelBuilder.Entity<Order>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -107,7 +91,6 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
             });
 
-            // Configure OrderDetail entity
             modelBuilder.Entity<OrderDetail>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -128,7 +111,6 @@ namespace SaleManagementSys.Data
                 .HasForeignKey(od => od.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure OrganizationSettings (single-row table)
             modelBuilder.Entity<OrganizationSettings>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -138,7 +120,6 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.Address).HasMaxLength(500);
             });
 
-            // Configure Login entity (auth - Logins table)
             modelBuilder.Entity<Login>(entity =>
             {
                 entity.ToTable("Logins");

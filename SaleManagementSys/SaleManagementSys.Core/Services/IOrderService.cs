@@ -6,8 +6,9 @@ namespace SaleManagementSys.Services
     {
         Task<Order?> GetOrderByIdAsync(int id);
         Task<List<Order>> GetOrdersForDisplayAsync(bool pendingFirst = true);
+        /// <summary>Gets the number of orders placed today (by OrderDate date).</summary>
+        Task<int> GetTodayOrdersCountAsync();
         Task<Order> CreateOrderAsync(CreateOrderViewModel model);
-        /// <summary>Converts order to sale, reduces product stock, marks order as Processed. Returns (sale, errorMessage); sale is null on failure.</summary>
         Task<(Sale? sale, string? errorMessage)> ProcessOrderAsync(int orderId);
     }
 }

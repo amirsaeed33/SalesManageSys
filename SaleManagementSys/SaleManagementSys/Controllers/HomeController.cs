@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SaleManagementSys.Models;
 
@@ -15,7 +18,7 @@ namespace SaleManagementSys.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return RedirectToAction(nameof(Login));
         }
 
         public IActionResult Privacy()
@@ -23,11 +26,19 @@ namespace SaleManagementSys.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
 
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction(nameof(Login));
+        }
+
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -9,4 +9,3 @@ namespace SaleManagementSys.Services
         Task<bool> DeleteAsync(int id);
     }
 }
-

@@ -37,6 +37,15 @@ namespace SaleManagementSys.Services
             return await query.ToListAsync();
         }
 
+        public async Task<int> GetTodayOrdersCountAsync()
+        {
+            var today = DateTime.Today;
+            return await _context.Orders
+                .AsNoTracking()
+                .Where(o => o.OrderDate.Date == today)
+                .CountAsync();
+        }
+
         public async Task<Order> CreateOrderAsync(CreateOrderViewModel model)
         {
             var validDetails = (model.OrderDetails ?? new List<CreateOrderDetailViewModel>())

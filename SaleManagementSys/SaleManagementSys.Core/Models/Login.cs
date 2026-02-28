@@ -2,9 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SaleManagementSys.Models
 {
-    /// <summary>
-    /// User login entity for authentication. Stored in Logins table.
-    /// </summary>
     public class Login
     {
         public int Id { get; set; }

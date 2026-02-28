@@ -6,4 +6,3 @@ namespace SaleManagementSys.Models
         public List<Category> Categories { get; set; } = new();
     }
 }
-

@@ -2,9 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SaleManagementSys.Models
 {
-    /// <summary>
-    /// View model for creating a sale. Uses detail items without Sale/SaleId to fix validation errors.
-    /// </summary>
     public class CreateSaleViewModel
     {
         [Required(ErrorMessage = "Customer name is required")]
@@ -21,7 +18,6 @@ namespace SaleManagementSys.Models
         [Display(Name = "Address")]
         public string? Address { get; set; }
 
-        // SaleDate is set automatically server-side (DateTime.Now), not user-editable
         public List<CreateSaleDetailViewModel> SaleDetails { get; set; } = new();
     }
 }

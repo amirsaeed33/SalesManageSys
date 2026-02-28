@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SaleManagementSys.Data;
@@ -24,31 +26,44 @@ if (builder.Environment.IsProduction())
 }
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Require login for all pages by default; use [AllowAnonymous] only for Login and auth API.
+    options.Filters.Add(new AuthorizeFilter());
+});
 
-// JWT authentication (modular auth - does not affect existing controllers)
+// Cookie auth as default so all pages require login; JWT still available for API
+var authBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Home/Login";
+        options.ExpireTimeSpan = TimeSpan.FromHours(24);
+        options.SlidingExpiration = true;
+    });
+
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "";
 if (!string.IsNullOrEmpty(jwtKey))
 {
-    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(options =>
+    authBuilder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-                ValidateIssuer = true,
-                ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                ValidateAudience = true,
-                ValidAudience = builder.Configuration["Jwt:Audience"],
-                ClockSkew = TimeSpan.Zero
-            };
-        });
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 }
 
 // Register ApplicationDbContext with SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsAssembly("SaleManagementSys")));
 
 // Register services
 builder.Services.AddScoped<ISaleService, SaleService>();
