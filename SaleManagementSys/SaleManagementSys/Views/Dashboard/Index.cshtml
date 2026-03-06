@@ -66,6 +66,7 @@
             var profit = @Html.Raw(chartProfitJson);
             var ctx = document.getElementById('dashboardChart');
             if (!ctx || typeof Chart === 'undefined') return;
+            var isMobile = window.innerWidth <= 768;
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -89,12 +90,20 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: 2.2,
+                    maintainAspectRatio: !isMobile,
+                    aspectRatio: isMobile ? 1.2 : 2.2,
+                    layout: {
+                        padding: isMobile ? { top: 8, right: 8, bottom: 8, left: 8 } : { top: 12, right: 12, bottom: 12, left: 12 }
+                    },
                     plugins: {
                         legend: {
                             position: 'top',
-                            labels: { color: '#F5F5F5' }
+                            labels: {
+                                color: '#F5F5F5',
+                                boxWidth: isMobile ? 12 : 40,
+                                padding: isMobile ? 10 : 12,
+                                font: { size: isMobile ? 11 : 12 }
+                            }
                         },
                         tooltip: {
                             callbacks: {
@@ -107,13 +116,20 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#A0A0A0' },
+                            ticks: {
+                                color: '#A0A0A0',
+                                maxRotation: isMobile ? 45 : 0,
+                                minRotation: isMobile ? 45 : 0,
+                                font: { size: isMobile ? 10 : 12 },
+                                maxTicksLimit: isMobile ? 7 : 12
+                            },
                             grid: { color: 'rgba(255,255,255,0.06)' }
                         },
                         y: {
                             beginAtZero: true,
                             ticks: {
                                 color: '#A0A0A0',
+                                font: { size: isMobile ? 10 : 12 },
                                 callback: function (v) {
                                     return 'Rs ' + (v >= 1000 ? (v / 1000) + 'k' : v);
                                 }
