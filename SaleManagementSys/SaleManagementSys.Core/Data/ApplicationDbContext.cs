@@ -18,6 +18,7 @@ namespace SaleManagementSys.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
         public DbSet<Login> Logins { get; set; }
+        public DbSet<ProductFeedback> ProductFeedbacks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -130,6 +131,15 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(150);
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.Property(e => e.CreatedAt).IsRequired();
+            });
+
+            modelBuilder.Entity<ProductFeedback>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Rating).IsRequired();
+                entity.Property(e => e.Comment).HasMaxLength(2000);
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.Property(e => e.CustomerName).HasMaxLength(200);
             });
         }
     }
