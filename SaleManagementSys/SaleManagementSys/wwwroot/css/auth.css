@@ -261,86 +261,85 @@ body.auth-page {
   margin: 0;
 }
 
-/* Tablet: single column stack, form below welcome */
+/* Tablet and mobile: only form boxes (no welcome); login and register slide */
 @media (max-width: 992px) {
-  .auth-panel {
-    flex-direction: column;
+  .auth-container {
+    max-width: 100vw;
   }
 
-  .auth-panel-half {
-    min-height: auto;
+  .auth-slider {
+    width: 200%;
+    max-width: 200vw;
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .auth-container.active .auth-slider {
+    transform: translateX(-50%);
+  }
+
+  .auth-panel {
+    width: 50%;
+    min-width: 50%;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Hide welcome only; show both login and register form panels */
+  .auth-panel-login .auth-panel-orange,
+  .auth-panel-register .auth-panel-orange {
+    display: none !important;
+  }
+
+  /* Login form panel: full screen, card centered */
+  .auth-panel-login .auth-panel-dark {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin-left: 0 !important;
+    clip-path: none !important;
     padding: 1.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  /* Register form panel: same layout when user taps Sign Up */
+  .auth-panel-register .auth-panel-dark {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
     margin-left: 0 !important;
     clip-path: none !important;
-  }
-
-  .auth-panel-login .auth-panel-dark,
-  .auth-panel-register .auth-panel-dark {
-    order: 1;
-    flex: 0 0 auto;
-  }
-
-  .auth-panel-login .auth-panel-orange,
-  .auth-panel-register .auth-panel-orange {
-    order: 0;
-    flex: 0 0 auto;
-    min-height: auto;
-  }
-
-  .auth-welcome {
-    padding: 1rem 0;
-  }
-
-  .auth-welcome-title {
-    font-size: 1.5rem;
-  }
-
-  .auth-welcome-desc {
-    font-size: 0.9rem;
-  }
-}
-
-/* Mobile: form-first (form on top), compact welcome, touch-friendly */
-@media (max-width: 768px) {
-  .auth-panel {
-    flex-direction: column;
-    min-height: auto;
-    padding-bottom: 1.5rem;
-  }
-
-  .auth-panel-half {
-    min-height: auto !important;
-    padding: 1rem 1rem 1.25rem;
-    margin-left: 0 !important;
-    clip-path: none !important;
-  }
-
-  /* Form first on mobile so login is visible without scrolling */
-  .auth-panel-login .auth-panel-dark,
-  .auth-panel-register .auth-panel-dark {
-    order: 0;
-  }
-
-  .auth-panel-login .auth-panel-orange,
-  .auth-panel-register .auth-panel-orange {
-    order: 1;
-    padding: 0.75rem 1rem;
-    min-height: auto;
-  }
-
-  .auth-welcome-title {
-    font-size: 1.25rem;
-    margin-bottom: 0.35rem;
-  }
-
-  .auth-welcome-desc {
-    display: none;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
   }
 
   .auth-card {
-    max-width: 100%;
+    width: 100%;
+    max-width: min(380px, calc(100vw - 2.5rem));
+    box-sizing: border-box;
+  }
+}
+
+/* Mobile: compact form, touch-friendly */
+@media (max-width: 768px) {
+  .auth-panel-login .auth-panel-dark,
+  .auth-panel-register .auth-panel-dark {
+    padding: 1rem 1rem 1.25rem;
+  }
+
+  .auth-card {
+    max-width: min(100%, calc(100vw - 2rem));
     padding: 1.5rem 1.25rem;
-    margin: 0 auto;
   }
 
   .auth-title {
@@ -374,26 +373,24 @@ body.auth-page {
   }
 }
 
-/* Small phones: reduce padding, ensure no overflow */
+/* Small phones: reduce padding */
 @media (max-width: 576px) {
-  .auth-page {
+  body.auth-page {
     padding-left: max(0.75rem, env(safe-area-inset-left));
     padding-right: max(0.75rem, env(safe-area-inset-right));
   }
 
-  .auth-panel-half {
+  .auth-panel-login .auth-panel-dark,
+  .auth-panel-register .auth-panel-dark {
     padding: 0.75rem 0.5rem 1rem;
   }
 
   .auth-card {
+    max-width: min(100%, calc(100vw - 1rem));
     padding: 1.25rem 1rem;
   }
 
   .auth-title {
     font-size: 1.35rem;
-  }
-
-  .auth-welcome-title {
-    font-size: 1.1rem;
   }
 }
