@@ -113,7 +113,7 @@ namespace SaleManagementSys.Services
             if (existing != null)
             {
                 existing.IsLike = isLike;
-                existing.CreatedAt = DateTime.UtcNow;
+                existing.UpdatedAt = DateTime.UtcNow;
             }
             else
             {
@@ -131,6 +131,21 @@ namespace SaleManagementSys.Services
             var counts = await GetReactionCountsForFeedbackIdsAsync(new[] { feedbackId }, cancellationToken);
             var (likes, dislikes) = counts.TryGetValue(feedbackId, out var c) ? c : (0, 0);
             return (true, "Thank you!", likes, dislikes);
+        }
+
+        public async Task<IReadOnlyDictionary<int, bool>> GetUserReactionsForFeedbackIdsAsync(string userIdentifier, IEnumerable<int> feedbackIds, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(userIdentifier)) return new Dictionary<int, bool>();
+            var ids = feedbackIds?.Distinct().ToList() ?? new List<int>();
+            if (ids.Count == 0) return new Dictionary<int, bool>();
+
+            var list = await _context.FeedbackReactions
+                .AsNoTracking()
+                .Where(r => r.UserIdentifier == userIdentifier && ids.Contains(r.ProductFeedbackId))
+                .Select(r => new { r.ProductFeedbackId, r.IsLike })
+                .ToListAsync(cancellationToken);
+
+            return list.ToDictionary(x => x.ProductFeedbackId, x => x.IsLike);
         }
     }
 }

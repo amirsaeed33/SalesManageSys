@@ -508,8 +508,16 @@
     .view-feedback-item .view-feedback-meta { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem; }
     .view-feedback-item .view-feedback-comment { color: var(--text); }
     .view-feedback-actions { font-size: 0.875rem; }
-    .view-feedback-react { color: var(--text-muted); }
+    .view-feedback-react { color: var(--text-muted); transition: transform 0.15s ease; }
     .view-feedback-react:hover { color: var(--primary); }
+    .view-feedback-react.react-bump { animation: reactBump 0.4s ease; }
+    .view-feedback-react.user-reacted { color: var(--primary); }
+    @@keyframes reactBump {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.35); }
+        70% { transform: scale(0.95); }
+        100% { transform: scale(1); }
+    }
     .feedback-star-btn {
         background: none;
         border: none;
@@ -755,10 +763,16 @@
                                 var comment = (item.comment || '').trim() ? ('<p class="view-feedback-comment mb-0">' + escapeHtml(item.comment) + '</p>') : '';
                                 var likes = item.likes != null ? item.likes : 0;
                                 var dislikes = item.dislikes != null ? item.dislikes : 0;
-                                var actions = '<div class="view-feedback-actions mt-2"><button type="button" class="view-feedback-react btn-link btn-sm p-0 me-3 text-decoration-none" data-feedback-id="' + escapeHtml(String(item.id)) + '" data-is-like="true" title="Like"><i class="far fa-thumbs-up"></i> <span class="view-feedback-likes">' + likes + '</span></button><button type="button" class="view-feedback-react btn-link btn-sm p-0 text-decoration-none" data-feedback-id="' + escapeHtml(String(item.id)) + '" data-is-like="false" title="Dislike"><i class="far fa-thumbs-down"></i> <span class="view-feedback-dislikes">' + dislikes + '</span></button></div>';
+                                var userReaction = item.userReaction || null;
+                                var likeCls = userReaction === 'like' ? ' view-feedback-react user-reacted' : ' view-feedback-react';
+                                var dislikeCls = userReaction === 'dislike' ? ' view-feedback-react user-reacted' : ' view-feedback-react';
+                                var likeIcon = userReaction === 'like' ? 'fas' : 'far';
+                                var dislikeIcon = userReaction === 'dislike' ? 'fas' : 'far';
+                                var actions = '<div class="view-feedback-actions mt-2"><button type="button" class="' + likeCls + ' btn-link btn-sm p-0 me-3 text-decoration-none" data-feedback-id="' + escapeHtml(String(item.id)) + '" data-is-like="true" title="Like"><i class="' + likeIcon + ' fa-thumbs-up"></i> <span class="view-feedback-likes">' + likes + '</span></button><button type="button" class="' + dislikeCls + ' btn-link btn-sm p-0 text-decoration-none" data-feedback-id="' + escapeHtml(String(item.id)) + '" data-is-like="false" title="Dislike"><i class="' + dislikeIcon + ' fa-thumbs-down"></i> <span class="view-feedback-dislikes">' + dislikes + '</span></button></div>';
                                 var div = document.createElement('div');
                                 div.className = 'view-feedback-item';
                                 div.setAttribute('data-feedback-id', String(item.id));
+                                div.setAttribute('data-user-reaction', userReaction || '');
                                 div.innerHTML = '<div class="view-feedback-meta">' + stars + ' &middot; ' + escapeHtml(by) + (dateStr ? ' &middot; ' + dateStr : '') + '</div>' + comment + actions;
                                 listEl.appendChild(div);
                             });
@@ -791,15 +805,35 @@
             var item = btn.closest('.view-feedback-item');
             var likesEl = item ? item.querySelector('.view-feedback-likes') : null;
             var dislikesEl = item ? item.querySelector('.view-feedback-dislikes') : null;
+            btn.classList.add('react-bump');
+            setTimeout(function() { btn.classList.remove('react-bump'); }, 400);
             var formData = new FormData();
             formData.append('feedbackId', feedbackId);
             formData.append('isLike', isLike);
-            fetch('@Url.Action("React", "Feedback")', { method: 'POST', body: formData })
+            fetch('@Url.Action("React", "Feedback")', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Skip-Loader': '1' }
+            })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
-                    if (data.success && likesEl && dislikesEl) {
-                        likesEl.textContent = data.likes != null ? data.likes : 0;
-                        dislikesEl.textContent = data.dislikes != null ? data.dislikes : 0;
+                    if (data.success && item) {
+                        if (likesEl) likesEl.textContent = data.likes != null ? data.likes : 0;
+                        if (dislikesEl) dislikesEl.textContent = data.dislikes != null ? data.dislikes : 0;
+                        var newReaction = data.userReaction || null;
+                        item.setAttribute('data-user-reaction', newReaction || '');
+                        var likeBtn = item.querySelector('.view-feedback-react[data-is-like="true"]');
+                        var dislikeBtn = item.querySelector('.view-feedback-react[data-is-like="false"]');
+                        if (likeBtn) {
+                            likeBtn.classList.toggle('user-reacted', newReaction === 'like');
+                            var likeIcon = likeBtn.querySelector('i.fa-thumbs-up');
+                            if (likeIcon) likeIcon.className = (newReaction === 'like' ? 'fas' : 'far') + ' fa-thumbs-up';
+                        }
+                        if (dislikeBtn) {
+                            dislikeBtn.classList.toggle('user-reacted', newReaction === 'dislike');
+                            var dislikeIcon = dislikeBtn.querySelector('i.fa-thumbs-down');
+                            if (dislikeIcon) dislikeIcon.className = (newReaction === 'dislike' ? 'fas' : 'far') + ' fa-thumbs-down';
+                        }
                     }
                 });
         });

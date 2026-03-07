@@ -23,15 +23,23 @@ namespace SaleManagementSys.Controllers
         [HttpGet]
         public async Task<IActionResult> GetByProduct(int productId, int max = 50, CancellationToken cancellationToken = default)
         {
+            const string cookieName = "feedback_uid";
+            var userIdentifier = Request.Cookies[cookieName];
+
             var list = await _feedbackService.GetFeedbackForProductAsync(productId, max, cancellationToken);
             var feedbackIds = list.Select(f => f.Id).ToList();
             var reactionCounts = feedbackIds.Count > 0
                 ? await _feedbackService.GetReactionCountsForFeedbackIdsAsync(feedbackIds, cancellationToken)
                 : new Dictionary<int, (int Likes, int Dislikes)>();
+            var userReactions = !string.IsNullOrWhiteSpace(userIdentifier) && feedbackIds.Count > 0
+                ? await _feedbackService.GetUserReactionsForFeedbackIdsAsync(userIdentifier, feedbackIds, cancellationToken)
+                : new Dictionary<int, bool>();
 
             var items = list.Select(f =>
             {
                 var (likes, dislikes) = reactionCounts.TryGetValue(f.Id, out var c) ? c : (0, 0);
+                string? userReaction = null;
+                if (userReactions.TryGetValue(f.Id, out var isLike)) userReaction = isLike ? "like" : "dislike";
                 return new
                 {
                     id = f.Id,
@@ -40,7 +48,8 @@ namespace SaleManagementSys.Controllers
                     customerName = f.CustomerName,
                     createdAt = f.CreatedAt,
                     likes,
-                    dislikes
+                    dislikes,
+                    userReaction
                 };
             }).ToList();
 
@@ -61,7 +70,8 @@ namespace SaleManagementSys.Controllers
             }
 
             var (success, message, likes, dislikes) = await _feedbackService.SubmitReactionAsync(feedbackId, isLike, userIdentifier, cancellationToken);
-            return Json(new { success, message, likes, dislikes });
+            var userReaction = success ? (isLike ? "like" : "dislike") : (string?)null;
+            return Json(new { success, message, likes, dislikes, userReaction });
         }
     }
 }
