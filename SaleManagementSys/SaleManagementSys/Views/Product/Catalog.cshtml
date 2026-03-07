@@ -1,9 +1,11 @@
 @model List<SaleManagementSys.Models.Product>
 @using System.Globalization
 @using SaleManagementSys.Helpers
+@using SaleManagementSys.Models
 @{
     ViewData["Title"] = "Products";
     var pkrCulture = CurrencyHelper.PkrCulture;
+    var feedbackSummaryDict = ViewBag.FeedbackSummary as IReadOnlyDictionary<int, FeedbackSummary>;
 }
 
 <div class="container-fluid px-4 py-4">
@@ -55,6 +57,25 @@
                                 <p class="card-text store-card-desc small text-muted mb-2">@(product.Description.Length > 80 ? product.Description.Substring(0, 80) + "…" : product.Description)</p>
                             }
                             <p class="store-card-price mb-2">@salePrice.ToString("C", pkrCulture)</p>
+                            @{
+                                var fs = feedbackSummaryDict != null && feedbackSummaryDict.ContainsKey(product.Id) ? feedbackSummaryDict[product.Id] : null;
+                            }
+                            @if (fs != null && fs.ReviewCount > 0)
+                            {
+                                var avg = fs.AverageRating;
+                                <div class="product-card-stars mb-2" title="@avg.ToString("F1") out of 5 (@fs.ReviewCount review@(fs.ReviewCount == 1 ? "" : "s"))">
+                                    @for (var i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Math.Floor(avg))
+                                        { <i class="fas fa-star text-warning small"></i> }
+                                        else if (i == Math.Floor(avg) + 1 && (avg - Math.Floor(avg)) >= 0.25)
+                                        { <i class="fas fa-star-half-alt text-warning small"></i> }
+                                        else
+                                        { <i class="far fa-star text-warning small"></i> }
+                                    }
+                                    <span class="text-muted small ms-1">(@fs.ReviewCount)</span>
+                                </div>
+                            }
                             <div class="d-flex align-items-center justify-content-between mb-2 product-qty-wrapper">
                                 <span class="small text-muted">Quantity</span>
                                 <div class="d-flex align-items-center product-qty-control">
@@ -445,6 +466,13 @@
         font-size: 1.25rem;
         margin-bottom: 0.75rem;
     }
+    .product-card-stars {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        line-height: 1.2;
+    }
+    .product-card-stars .fa-star, .product-card-stars .fa-star-half-alt { font-size: 0.85rem; }
     .btn-add-order {
         width: 100%;
         font-weight: 600;
@@ -479,6 +507,9 @@
     }
     .view-feedback-item .view-feedback-meta { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.25rem; }
     .view-feedback-item .view-feedback-comment { color: var(--text); }
+    .view-feedback-actions { font-size: 0.875rem; }
+    .view-feedback-react { color: var(--text-muted); }
+    .view-feedback-react:hover { color: var(--primary); }
     .feedback-star-btn {
         background: none;
         border: none;
@@ -722,11 +753,16 @@
                                 var stars = '';
                                 for (var i = 0; i < 5; i++) stars += (i < r) ? '<i class="fas fa-star text-warning small"></i>' : '<i class="far fa-star text-warning small"></i>';
                                 var comment = (item.comment || '').trim() ? ('<p class="view-feedback-comment mb-0">' + escapeHtml(item.comment) + '</p>') : '';
+                                var likes = item.likes != null ? item.likes : 0;
+                                var dislikes = item.dislikes != null ? item.dislikes : 0;
+                                var actions = '<div class="view-feedback-actions mt-2"><button type="button" class="view-feedback-react btn-link btn-sm p-0 me-3 text-decoration-none" data-feedback-id="' + escapeHtml(String(item.id)) + '" data-is-like="true" title="Like"><i class="far fa-thumbs-up"></i> <span class="view-feedback-likes">' + likes + '</span></button><button type="button" class="view-feedback-react btn-link btn-sm p-0 text-decoration-none" data-feedback-id="' + escapeHtml(String(item.id)) + '" data-is-like="false" title="Dislike"><i class="far fa-thumbs-down"></i> <span class="view-feedback-dislikes">' + dislikes + '</span></button></div>';
                                 var div = document.createElement('div');
                                 div.className = 'view-feedback-item';
-                                div.innerHTML = '<div class="view-feedback-meta">' + stars + ' &middot; ' + escapeHtml(by) + (dateStr ? ' &middot; ' + dateStr : '') + '</div>' + comment;
+                                div.setAttribute('data-feedback-id', String(item.id));
+                                div.innerHTML = '<div class="view-feedback-meta">' + stars + ' &middot; ' + escapeHtml(by) + (dateStr ? ' &middot; ' + dateStr : '') + '</div>' + comment + actions;
                                 listEl.appendChild(div);
                             });
+                            initViewFeedbackReactions(listEl);
                         })
                         .catch(function() {
                             loadingEl.classList.add('d-none');
@@ -742,6 +778,31 @@
         var div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+    function initViewFeedbackReactions(container) {
+        if (!container) return;
+        container.addEventListener('click', function(e) {
+            var btn = e.target.closest('.view-feedback-react');
+            if (!btn) return;
+            e.preventDefault();
+            var feedbackId = parseInt(btn.getAttribute('data-feedback-id'), 10);
+            var isLike = btn.getAttribute('data-is-like') === 'true';
+            if (isNaN(feedbackId)) return;
+            var item = btn.closest('.view-feedback-item');
+            var likesEl = item ? item.querySelector('.view-feedback-likes') : null;
+            var dislikesEl = item ? item.querySelector('.view-feedback-dislikes') : null;
+            var formData = new FormData();
+            formData.append('feedbackId', feedbackId);
+            formData.append('isLike', isLike);
+            fetch('@Url.Action("React", "Feedback")', { method: 'POST', body: formData })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success && likesEl && dislikesEl) {
+                        likesEl.textContent = data.likes != null ? data.likes : 0;
+                        dislikesEl.textContent = data.dislikes != null ? data.dislikes : 0;
+                    }
+                });
+        });
     }
 
     // Feedback modal: star rating and submit

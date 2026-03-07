@@ -53,5 +53,84 @@ namespace SaleManagementSys.Services
                 .Take(maxCount)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<IReadOnlyDictionary<int, FeedbackSummary>> GetFeedbackSummaryByProductIdsAsync(IEnumerable<int> productIds, CancellationToken cancellationToken = default)
+        {
+            var ids = productIds?.Distinct().ToList() ?? new List<int>();
+            if (ids.Count == 0)
+                return new Dictionary<int, FeedbackSummary>();
+
+            var list = await _context.ProductFeedbacks
+                .AsNoTracking()
+                .Where(f => ids.Contains(f.ProductId))
+                .GroupBy(f => f.ProductId)
+                .Select(g => new { ProductId = g.Key, AverageRating = Math.Round(g.Average(f => f.Rating), 1), ReviewCount = g.Count() })
+                .ToListAsync(cancellationToken);
+
+            return list.ToDictionary(x => x.ProductId, x => new FeedbackSummary { AverageRating = x.AverageRating, ReviewCount = x.ReviewCount });
+        }
+
+        public async Task<IReadOnlyDictionary<int, (int Likes, int Dislikes)>> GetReactionCountsForFeedbackIdsAsync(IEnumerable<int> feedbackIds, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var ids = feedbackIds?.Distinct().ToList() ?? new List<int>();
+                if (ids.Count == 0)
+                    return new Dictionary<int, (int, int)>();
+
+                var list = await _context.FeedbackReactions
+                    .AsNoTracking()
+                    .Where(r => ids.Contains(r.ProductFeedbackId))
+                    .GroupBy(r => r.ProductFeedbackId)
+                    .Select(g => new
+                    {
+                        FeedbackId = g.Key,
+                        Likes = g.Count(r => r.IsLike),
+                        Dislikes = g.Count(r => !r.IsLike)
+                    })
+                    .ToListAsync(cancellationToken);
+
+                return list.ToDictionary(x => x.FeedbackId, x => (x.Likes, x.Dislikes));
+            }
+            catch (Exception ex)
+            {
+                return new Dictionary<int, (int Likes, int Dislikes)>();
+            }
+        }
+
+        public async Task<(bool Success, string Message, int Likes, int Dislikes)> SubmitReactionAsync(int feedbackId, bool isLike, string userIdentifier, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(userIdentifier))
+                return (false, "Invalid session.", 0, 0);
+
+            var feedbackExists = await _context.ProductFeedbacks.AsNoTracking().AnyAsync(f => f.Id == feedbackId, cancellationToken);
+            if (!feedbackExists)
+                return (false, "Review not found.", 0, 0);
+
+            var existing = await _context.FeedbackReactions
+                .FirstOrDefaultAsync(r => r.ProductFeedbackId == feedbackId && r.UserIdentifier == userIdentifier, cancellationToken);
+
+            if (existing != null)
+            {
+                existing.IsLike = isLike;
+                existing.CreatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                _context.FeedbackReactions.Add(new FeedbackReaction
+                {
+                    ProductFeedbackId = feedbackId,
+                    IsLike = isLike,
+                    UserIdentifier = userIdentifier.Trim(),
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            var counts = await GetReactionCountsForFeedbackIdsAsync(new[] { feedbackId }, cancellationToken);
+            var (likes, dislikes) = counts.TryGetValue(feedbackId, out var c) ? c : (0, 0);
+            return (true, "Thank you!", likes, dislikes);
+        }
     }
 }

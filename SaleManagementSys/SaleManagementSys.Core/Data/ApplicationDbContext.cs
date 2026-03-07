@@ -19,6 +19,7 @@ namespace SaleManagementSys.Data
         public DbSet<OrganizationSettings> OrganizationSettings { get; set; }
         public DbSet<Login> Logins { get; set; }
         public DbSet<ProductFeedback> ProductFeedbacks { get; set; }
+        public DbSet<FeedbackReaction> FeedbackReactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -140,6 +141,14 @@ namespace SaleManagementSys.Data
                 entity.Property(e => e.Comment).HasMaxLength(2000);
                 entity.Property(e => e.CreatedAt).IsRequired();
                 entity.Property(e => e.CustomerName).HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<FeedbackReaction>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserIdentifier).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.CreatedAt).IsRequired();
+                entity.HasIndex(e => new { e.ProductFeedbackId, e.UserIdentifier }).IsUnique();
             });
         }
     }

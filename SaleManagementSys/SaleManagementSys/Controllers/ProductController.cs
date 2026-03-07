@@ -8,12 +8,14 @@ namespace SaleManagementSys.Controllers
     {
         private readonly IProductService _productService;
         private readonly ICategoryService _categoryService;
+        private readonly IFeedbackService _feedbackService;
         private readonly IWebHostEnvironment _env;
 
-        public ProductController(IProductService productService, ICategoryService categoryService, IWebHostEnvironment env)
+        public ProductController(IProductService productService, ICategoryService categoryService, IFeedbackService feedbackService, IWebHostEnvironment env)
         {
             _productService = productService;
             _categoryService = categoryService;
+            _feedbackService = feedbackService;
             _env = env;
         }
 
@@ -31,6 +33,7 @@ namespace SaleManagementSys.Controllers
             ViewBag.CatalogTotalCount = totalCount;
             ViewBag.CatalogHasMore = totalCount > pageSize;
             ViewBag.CatalogPageSize = pageSize;
+            ViewBag.FeedbackSummary = items.Count > 0 ? await _feedbackService.GetFeedbackSummaryByProductIdsAsync(items.Select(p => p.Id)) : new Dictionary<int, FeedbackSummary>();
             return View(items);
         }
 
@@ -44,6 +47,7 @@ namespace SaleManagementSys.Controllers
             var hasMore = skip + items.Count < totalCount;
             ViewBag.HasMore = hasMore;
             ViewBag.NextPage = page + 1;
+            ViewBag.FeedbackSummary = items.Count > 0 ? await _feedbackService.GetFeedbackSummaryByProductIdsAsync(items.Select(p => p.Id)) : new Dictionary<int, FeedbackSummary>();
             return PartialView("_CatalogProductBatch", items);
         }
 
