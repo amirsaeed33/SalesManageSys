@@ -24,5 +24,15 @@ namespace SaleManagementSys.Models
         public string PasswordHash { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; }
+        
+        [StringLength(100)]
+        public string? GoogleId { get; set; }
+
+        [StringLength(20)]
+        public string? AuthProvider { get; set; } = "Local"; // "Local" or "Google"
+
+        public bool IsEmailVerified { get; set; }
+
+        public DateTime? LastLoginAt { get; set; }
     }
 }
