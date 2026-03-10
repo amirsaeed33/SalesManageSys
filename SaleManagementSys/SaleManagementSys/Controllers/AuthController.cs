@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+using System.Collections.Generic;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -32,7 +33,7 @@ namespace SaleManagementSys.Controllers
             var result = await _authService.RegisterAsync(request);
             if (!result.Success)
                 return BadRequest(result);
-            await SignInCookieAsync(result.UserId!.Value, result.Username ?? "");
+            await SignInCookieAsync(result.UserId!.Value, result.Username ?? "", result.Email);
             return Ok(result);
         }
 
@@ -44,7 +45,7 @@ namespace SaleManagementSys.Controllers
             var result = await _authService.LoginAsync(request);
             if (!result.Success)
                 return Unauthorized(result);
-            await SignInCookieAsync(result.UserId!.Value, result.Username ?? "");
+            await SignInCookieAsync(result.UserId!.Value, result.Username ?? "", result.Email);
             return Ok(result);
         }
 
@@ -92,8 +93,9 @@ namespace SaleManagementSys.Controllers
                     return Redirect("/Home/Login?googleAuth=error");
                 }
 
-                // Sign in the user
-                await SignInCookieAsync(user.Id, user.Username);
+                // Sign in the user (with email + picture for navbar display)
+                var picture = result.Principal?.FindFirstValue("picture");
+                await SignInCookieAsync(user.Id, user.Username, email, picture);
 
                 // 🔴 FIX 4: Generate token and store in cookie/session if needed
                 var token = await _authService.GenerateJwtTokenAsync(user.Id, user.Username);
@@ -126,14 +128,18 @@ namespace SaleManagementSys.Controllers
             return Ok(new { Success = true, Message = "Logged out successfully" });
         }
 
-        private async Task SignInCookieAsync(int userId, string username)
+        private async Task SignInCookieAsync(int userId, string username, string? email = null, string? pictureUrl = null)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(ClaimTypes.Name, username)
             };
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            if (!string.IsNullOrEmpty(email))
+                claims.Add(new Claim(ClaimTypes.Email, email));
+            if (!string.IsNullOrEmpty(pictureUrl))
+                claims.Add(new Claim("picture", pictureUrl));
+            var identity = new ClaimsIdentity(claims.ToArray(), CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
                 new AuthenticationProperties

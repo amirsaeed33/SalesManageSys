@@ -35,6 +35,7 @@ namespace SaleManagementSys.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            Response.Cookies.Delete("AuthToken");
             return RedirectToAction(nameof(Login));
         }
 

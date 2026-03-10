@@ -41,12 +41,39 @@
             </div>
         </div>
     }
+    @using System.Security.Claims
+    @{
+        var isLoggedIn = User?.Identity?.IsAuthenticated == true;
+        var userEmail = isLoggedIn && User != null ? (User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value) : null;
+        var userPicture = isLoggedIn && User != null ? User.FindFirst("picture")?.Value : null;
+        var userName = isLoggedIn ? User?.Identity?.Name : null;
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand d-flex align-items-center text-dark text-decoration-none me-4" asp-controller="Dashboard" asp-action="Index">
-                    @(await Component.InvokeAsync("OrganizationName", new { showLogo = true }))
-                    <span class="ms-2 fw-semibold">@(await Component.InvokeAsync("OrganizationName", new { showLogo = false }))</span>
+                    @if (isLoggedIn && (!string.IsNullOrEmpty(userEmail) || !string.IsNullOrEmpty(userName)))
+                    {
+                        <span class="navbar-brand-circle me-2">
+                            @if (!string.IsNullOrEmpty(userPicture))
+                            {
+                                <img src="@userPicture" alt="" class="navbar-brand-circle-img" />
+                            }
+                            else
+                            {
+                                var initials = !string.IsNullOrEmpty(userName) && userName.Length >= 2
+                                    ? userName.Substring(0, 2).ToUpperInvariant()
+                                    : !string.IsNullOrEmpty(userEmail) ? userEmail.Substring(0, 1).ToUpperInvariant() : "?";
+                                <span class="navbar-brand-initials">@initials</span>
+                            }
+                        </span>
+                        <span class="ms-2 fw-semibold text-truncate" style="max-width: 180px;" title="@(userEmail ?? userName)">@(userEmail ?? userName)</span>
+                    }
+                    else
+                    {
+                        @(await Component.InvokeAsync("OrganizationName", new { showLogo = true }))
+                        <span class="ms-2 fw-semibold">@(await Component.InvokeAsync("OrganizationName", new { showLogo = false }))</span>
+                    }
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -73,11 +100,26 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="OrganizationSettings" asp-action="Index"><i class="fas fa-cog me-1"></i>Organization</a>
                         </li>
                     </ul>
-                    <div id="navbarUserBlock" class="d-flex align-items-center ms-auto" style="display: none !important;">
+                    <div id="navbarUserBlock" class="d-flex align-items-center ms-auto @(isLoggedIn ? "" : "d-none")" style="@(isLoggedIn ? "" : "display:none!important")">
                         <div class="dropdown">
                             <button class="btn btn-link p-0 text-decoration-none d-flex align-items-center text-dark dropdown-toggle" type="button" id="navbarUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span id="navbarUserCircle" class="navbar-brand-circle me-2"></span>
-                                <span id="navbarUserName" class="fw-medium"></span>
+                                <span id="navbarUserCircle" class="navbar-brand-circle me-2">
+                                    @if (isLoggedIn)
+                                    {
+                                        @if (!string.IsNullOrEmpty(userPicture))
+                                        {
+                                            <img src="@userPicture" alt="" class="navbar-brand-circle-img" />
+                                        }
+                                        else
+                                        {
+                                            var rightInitials = !string.IsNullOrEmpty(userName) && userName.Length >= 2
+                                                ? userName.Substring(0, 2).ToUpperInvariant()
+                                                : !string.IsNullOrEmpty(userEmail) ? userEmail.Substring(0, 1).ToUpperInvariant() : "?";
+                                            <span class="navbar-brand-initials">@rightInitials</span>
+                                        }
+                                    }
+                                </span>
+                                <span id="navbarUserName" class="fw-medium">@(isLoggedIn ? (userEmail ?? userName ?? "") : "")</span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                                 <li><a class="dropdown-item" href="/Home/Logout" id="navbarLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
